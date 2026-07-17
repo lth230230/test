@@ -1,0 +1,176 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10001 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B20001; };
+		B10002 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B20002; };
+		B10003 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B20003; };
+		B10004 /* MYTabBarController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20004; };
+		B10005 /* MYNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20005; };
+		B10006 /* HomeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20006; };
+		B10007 /* HomeHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = B20007; };
+		B10008 /* HomeCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B20008; };
+		B10009 /* LearnDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20009; };
+		B10010 /* LearnViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20010; };
+		B10011 /* ResourcesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20011; };
+		B10012 /* SettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20012; };
+		B10013 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20022; };
+		B10014 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20023; };
+		B10015 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20024; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B20001 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		B20002 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		B20003 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		B20004 /* MYTabBarController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MYTabBarController.m; sourceTree = "<group>"; };
+		B20005 /* MYNavigationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MYNavigationController.m; sourceTree = "<group>"; };
+		B20006 /* HomeViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeViewController.m; sourceTree = "<group>"; };
+		B20007 /* HomeHeaderView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeHeaderView.m; sourceTree = "<group>"; };
+		B20008 /* HomeCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeCell.m; sourceTree = "<group>"; };
+		B20009 /* LearnDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LearnDetailViewController.m; sourceTree = "<group>"; };
+		B20010 /* LearnViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LearnViewController.m; sourceTree = "<group>"; };
+		B20011 /* ResourcesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ResourcesViewController.m; sourceTree = "<group>"; };
+		B20012 /* SettingsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsViewController.m; sourceTree = "<group>"; };
+		B20013 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		B20014 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		B20015 /* MYTabBarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MYTabBarController.h; sourceTree = "<group>"; };
+		B20016 /* MYNavigationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MYNavigationController.h; sourceTree = "<group>"; };
+		B20017 /* HomeViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeViewController.h; sourceTree = "<group>"; };
+		B20018 /* HomeHeaderView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeHeaderView.h; sourceTree = "<group>"; };
+		B20019 /* HomeCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeCell.h; sourceTree = "<group>"; };
+		B20020 /* LearnDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LearnDetailViewController.h; sourceTree = "<group>"; };
+		B20021 /* LearnViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LearnViewController.h; sourceTree = "<group>"; };
+		B20022 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		B20023 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		B20024 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		B20025 /* ResourcesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ResourcesViewController.h; sourceTree = "<group>"; };
+		B20026 /* SettingsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsViewController.h; sourceTree = "<group>"; };
+		B20027 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B20028 /* iOSStudyApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSStudyApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B30001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B10013, B10014, B10015); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B40001 = {isa = PBXGroup; children = (B40002 /* iOSStudyApp */, B40003 /* Products */, B40010 /* Frameworks */); sourceTree = "<group>"; };
+		B40002 /* iOSStudyApp */ = {
+			isa = PBXGroup;
+			children = (B40004 /* Base */, B40005 /* Modules */, B40006 /* Resources */,
+				B20013, B20002, B20014, B20003, B20001, B20027);
+			path = iOSStudyApp; sourceTree = "<group>";
+		};
+		B40003 /* Products */ = {isa = PBXGroup; children = (B20028); name = Products; sourceTree = "<group>"; };
+		B40004 /* Base */ = {isa = PBXGroup; children = (B20015, B20004, B20016, B20005); path = Base; sourceTree = "<group>"; };
+		B40005 /* Modules */ = {isa = PBXGroup; children = (B40007 /* Home */, B40008 /* Learn */, B40009 /* Resources */, B40011 /* Settings */); path = Modules; sourceTree = "<group>"; };
+		B40006 /* Resources */ = {isa = PBXGroup; children = (); path = Resources; sourceTree = "<group>"; };
+		B40007 /* Home */ = {isa = PBXGroup; children = (B20017, B20006, B20018, B20007, B20019, B20008, B20020, B20009); path = Home; sourceTree = "<group>"; };
+		B40008 /* Learn */ = {isa = PBXGroup; children = (B20021, B20010); path = Learn; sourceTree = "<group>"; };
+		B40009 /* Resources */ = {isa = PBXGroup; children = (B20025, B20011); path = Resources; sourceTree = "<group>"; };
+		B40010 /* Frameworks */ = {isa = PBXGroup; children = (B20022, B20023, B20024); name = Frameworks; sourceTree = "<group>"; };
+		B40011 /* Settings */ = {isa = PBXGroup; children = (B20026, B20012); path = Settings; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B50001 /* iOSStudyApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B70001;
+			buildPhases = (B60001, B30001, B60002);
+			buildRules = ();
+			dependencies = ();
+			name = iOSStudyApp;
+			productName = iOSStudyApp;
+			productReference = B20028;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B80001 = {
+			isa = PBXProject;
+			attributes = { BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1500; };
+			buildConfigurationList = B70002;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, Base, "zh-Hans");
+			mainGroup = B40001;
+			productRefGroup = B40003;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (B50001);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B60002 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B60001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B10001, B10002, B10003, B10004, B10005, B10006, B10007, B10008, B10009, B10010, B10011, B10012); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B90001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = iOSStudyApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.demo.iOSStudyApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+			};
+			name = Debug;
+		};
+		B90002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = iOSStudyApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.demo.iOSStudyApp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+			};
+			name = Release;
+		};
+		B90003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		B90004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				SDKROOT = iphoneos;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B70001 = {isa = XCConfigurationList; buildConfigurations = (B90001, B90002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		B70002 = {isa = XCConfigurationList; buildConfigurations = (B90003, B90004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = B80001;
+}
