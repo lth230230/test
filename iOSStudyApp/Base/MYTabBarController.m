@@ -9,21 +9,22 @@
 #import "ResourcesViewController.h"
 #import "SettingsViewController.h"
 #import "MYNavigationController.h"
+#import "MYTheme.h"
 
 @implementation MYTabBarController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.view.backgroundColor = [MYTheme backgroundColor];
     
     UITabBarAppearance *appearance = [[UITabBarAppearance alloc] init];
     [appearance configureWithOpaqueBackground];
     appearance.backgroundColor = [UIColor whiteColor];
-    appearance.shadowColor = [UIColor clearColor];
+    appearance.shadowColor = [[UIColor blackColor] colorWithAlphaComponent:0.06];
     self.tabBar.standardAppearance = appearance;
     self.tabBar.scrollEdgeAppearance = appearance;
-    self.tabBar.tintColor = [UIColor colorWithRed:0.18 green:0.60 blue:0.96 alpha:1.0];
-    self.tabBar.unselectedItemTintColor = [UIColor grayColor];
+    self.tabBar.tintColor = [MYTheme primaryColor];
+    self.tabBar.unselectedItemTintColor = [MYTheme textTertiaryColor];
     
     [self setupChildControllers];
 }
