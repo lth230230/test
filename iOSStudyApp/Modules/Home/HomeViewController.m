@@ -13,6 +13,8 @@
 @interface HomeViewController () <UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating>
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) HomeHeaderView *headerView;
+@property (nonatomic, strong) UIView *tableHeaderContainer;
+@property (nonatomic, strong) UIView *filterWrap;
 @property (nonatomic, strong) NSArray<NSDictionary *> *lessons;
 @property (nonatomic, strong) NSArray<NSDictionary *> *filteredLessons;
 @property (nonatomic, strong) UISearchController *searchController;
@@ -45,6 +47,11 @@
     [self.headerView refresh];
 }
 
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    [self updateTableHeaderLayoutIfNeeded];
+}
+
 - (void)setupSearch {
     self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
     self.searchController.searchResultsUpdater = self;
@@ -67,32 +74,33 @@
     [self.tableView registerClass:[HomeCell class] forCellReuseIdentifier:@"HomeCell"];
     [self.view addSubview:self.tableView];
     
-    self.headerView = [[HomeHeaderView alloc] initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 210)];
+    CGFloat width = UIScreen.mainScreen.bounds.size.width;
+    self.headerView = [[HomeHeaderView alloc] initWithFrame:CGRectMake(0, 0, width, 210)];
     __weak typeof(self) weakSelf = self;
     self.headerView.onContinue = ^{
         [weakSelf continueLearning];
     };
-    self.tableView.tableHeaderView = self.headerView;
     
-    UIView *filterWrap = [[UIView alloc] initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 54)];
+    self.filterWrap = [[UIView alloc] initWithFrame:CGRectMake(0, 210, width, 54)];
     self.filterControl = [[UISegmentedControl alloc] initWithItems:@[@"全部", @"待学", @"已完成", @"收藏"]];
     self.filterControl.selectedSegmentIndex = 0;
     self.filterControl.translatesAutoresizingMaskIntoConstraints = NO;
     [self.filterControl addTarget:self action:@selector(filterChanged) forControlEvents:UIControlEventValueChanged];
-    [filterWrap addSubview:self.filterControl];
+    [self.filterWrap addSubview:self.filterControl];
+    
+    NSLayoutConstraint *filterTrailing = [self.filterControl.trailingAnchor constraintEqualToAnchor:self.filterWrap.trailingAnchor constant:-20];
+    filterTrailing.priority = UILayoutPriorityDefaultHigh;
     [NSLayoutConstraint activateConstraints:@[
-        [self.filterControl.leadingAnchor constraintEqualToAnchor:filterWrap.leadingAnchor constant:20],
-        [self.filterControl.trailingAnchor constraintEqualToAnchor:filterWrap.trailingAnchor constant:-20],
-        [self.filterControl.centerYAnchor constraintEqualToAnchor:filterWrap.centerYAnchor],
+        [self.filterControl.leadingAnchor constraintEqualToAnchor:self.filterWrap.leadingAnchor constant:20],
+        filterTrailing,
+        [self.filterControl.centerYAnchor constraintEqualToAnchor:self.filterWrap.centerYAnchor],
     ]];
     
-    // Put filter below header by embedding in a container header
-    UIView *container = [[UIView alloc] initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 264)];
-    self.headerView.frame = CGRectMake(0, 0, container.bounds.size.width, 210);
-    filterWrap.frame = CGRectMake(0, 210, container.bounds.size.width, 54);
-    [container addSubview:self.headerView];
-    [container addSubview:filterWrap];
-    self.tableView.tableHeaderView = container;
+    self.tableHeaderContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 264)];
+    self.tableHeaderContainer.backgroundColor = [UIColor clearColor];
+    [self.tableHeaderContainer addSubview:self.headerView];
+    [self.tableHeaderContainer addSubview:self.filterWrap];
+    self.tableView.tableHeaderView = self.tableHeaderContainer;
     
     [NSLayoutConstraint activateConstraints:@[
         [self.tableView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
@@ -100,6 +108,26 @@
         [self.tableView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
         [self.tableView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     ]];
+}
+
+- (void)updateTableHeaderLayoutIfNeeded {
+    if (!self.tableHeaderContainer || self.tableView.bounds.size.width <= 0) return;
+    
+    CGFloat width = self.tableView.bounds.size.width;
+    CGFloat headerHeight = 210;
+    CGFloat filterHeight = 54;
+    CGFloat totalHeight = headerHeight + filterHeight;
+    
+    BOOL needsUpdate = fabs(self.tableHeaderContainer.bounds.size.width - width) > 0.5
+        || fabs(self.tableHeaderContainer.bounds.size.height - totalHeight) > 0.5;
+    if (!needsUpdate) return;
+    
+    self.tableHeaderContainer.frame = CGRectMake(0, 0, width, totalHeight);
+    self.headerView.frame = CGRectMake(0, 0, width, headerHeight);
+    self.filterWrap.frame = CGRectMake(0, headerHeight, width, filterHeight);
+    
+    // Re-assign to force UITableView to pick up the new header size.
+    self.tableView.tableHeaderView = self.tableHeaderContainer;
 }
 
 - (void)reloadData {

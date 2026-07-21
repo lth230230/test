@@ -25,7 +25,16 @@
     return self;
 }
 
+- (NSLayoutConstraint *)flexibleTrailing:(NSLayoutConstraint *)constraint {
+    // UITableView may temporarily force tableHeaderView width to 0.
+    // Keep trailing constraints breakable so layout can recover without console spam.
+    constraint.priority = UILayoutPriorityDefaultHigh;
+    return constraint;
+}
+
 - (void)setupUI {
+    self.clipsToBounds = NO;
+    
     self.cardView = [[UIView alloc] init];
     self.cardView.backgroundColor = [MYTheme primaryColor];
     self.cardView.layer.cornerRadius = 20;
@@ -81,10 +90,15 @@
     [self.continueBtn addTarget:self action:@selector(continueTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.cardView addSubview:self.continueBtn];
     
+    NSLayoutConstraint *cardTrailing = [self.cardView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-20];
+    NSLayoutConstraint *progressTrailing = [self.progressLabel.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:-20];
+    NSLayoutConstraint *barTrailing = [self.progressBar.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:-20];
+    NSLayoutConstraint *btnTrailing = [self.continueBtn.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:-20];
+    
     [NSLayoutConstraint activateConstraints:@[
         [self.cardView.topAnchor constraintEqualToAnchor:self.topAnchor constant:12],
         [self.cardView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:20],
-        [self.cardView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-20],
+        [self flexibleTrailing:cardTrailing],
         [self.cardView.bottomAnchor constraintEqualToAnchor:self.bottomAnchor constant:-8],
         
         [glow.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:30],
@@ -101,11 +115,11 @@
         
         [self.progressLabel.topAnchor constraintEqualToAnchor:self.dayLabel.bottomAnchor constant:10],
         [self.progressLabel.leadingAnchor constraintEqualToAnchor:self.greetingLabel.leadingAnchor],
-        [self.progressLabel.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:-20],
+        [self flexibleTrailing:progressTrailing],
         
         [self.progressBar.topAnchor constraintEqualToAnchor:self.progressLabel.bottomAnchor constant:10],
         [self.progressBar.leadingAnchor constraintEqualToAnchor:self.greetingLabel.leadingAnchor],
-        [self.progressBar.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:-20],
+        [self flexibleTrailing:barTrailing],
         [self.progressBar.heightAnchor constraintEqualToConstant:8],
         
         [self.goalLabel.topAnchor constraintEqualToAnchor:self.progressBar.bottomAnchor constant:10],
@@ -113,7 +127,7 @@
         [self.goalLabel.bottomAnchor constraintEqualToAnchor:self.cardView.bottomAnchor constant:-18],
         
         [self.continueBtn.centerYAnchor constraintEqualToAnchor:self.dayLabel.centerYAnchor],
-        [self.continueBtn.trailingAnchor constraintEqualToAnchor:self.cardView.trailingAnchor constant:-20],
+        [self flexibleTrailing:btnTrailing],
         [self.continueBtn.widthAnchor constraintEqualToConstant:110],
         [self.continueBtn.heightAnchor constraintEqualToConstant:40],
     ]];
