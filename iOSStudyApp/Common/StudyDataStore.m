@@ -298,7 +298,18 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 
 - (void)unmarkLessonCompleted:(NSString *)lessonId {
     if (!lessonId.length) return;
+    if (![self.completedIds containsObject:lessonId]) return;
+    NSDictionary *lesson = [self lessonWithId:lessonId];
+    NSInteger mins = [lesson[@"minutes"] integerValue];
     [self.completedIds removeObject:lessonId];
+    if (mins > 0) {
+        NSUserDefaults *ud = NSUserDefaults.standardUserDefaults;
+        [self refreshTodayIfNeeded];
+        NSInteger total = MAX(0, [ud integerForKey:kTotalMinutesKey] - mins);
+        NSInteger today = MAX(0, [ud integerForKey:kTodayMinutesKey] - mins);
+        [ud setInteger:total forKey:kTotalMinutesKey];
+        [ud setInteger:today forKey:kTodayMinutesKey];
+    }
     [self persistSets];
     [self notifyChange];
 }
@@ -384,7 +395,7 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
     for (NSDictionary *lesson in self.lessons) {
         if (![self isLessonCompleted:lesson[@"id"]]) return lesson;
     }
-    return self.lessons.firstObject;
+    return nil;
 }
 
 #pragma mark - Bookmarks
