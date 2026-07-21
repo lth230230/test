@@ -30,6 +30,20 @@
     self.score = 0;
     self.selectedIndex = -1;
     [self setupUI];
+    if (self.questions.count == 0) {
+        UIAlertController *alert =
+            [UIAlertController alertControllerWithTitle:@"暂无练习"
+                                               message:@"这节课还没有测验题"
+                                    preferredStyle:UIAlertControllerStyleAlert];
+        __weak typeof(self) weakSelf = self;
+        [alert addAction:[UIAlertAction actionWithTitle:@"返回"
+                                                  style:UIAlertActionStyleDefault
+                                                handler:^(__unused UIAlertAction *action) {
+            [weakSelf.navigationController popViewControllerAnimated:YES];
+        }]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
     [self renderQuestion];
 }
 

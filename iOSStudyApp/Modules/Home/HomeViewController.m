@@ -146,7 +146,17 @@
 
 - (void)continueLearning {
     NSDictionary *next = [[StudyDataStore shared] nextLessonToContinue];
-    if (!next) return;
+    if (!next) {
+        UIAlertController *alert =
+            [UIAlertController alertControllerWithTitle:@"暂无待学课程"
+                                               message:@"去课程列表挑一课开始学习吧"
+                                        preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"好的"
+                                                  style:UIAlertActionStyleDefault
+                                                handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
     [self openLesson:next];
 }
 

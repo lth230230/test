@@ -204,6 +204,12 @@
         [self.completeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         self.completeBtn.backgroundColor = [MYTheme accentColor];
     }
+
+    NSArray *quiz = [store quizForLesson:self.data];
+    BOOL hasQuiz = quiz.count > 0;
+    self.practiceBtn.hidden = !hasQuiz;
+    self.practiceBtn.enabled = hasQuiz;
+    self.practiceBtn.alpha = hasQuiz ? 1.0 : 0.0;
 }
 
 - (NSString *)difficultyForTag:(NSString *)tag {
@@ -232,6 +238,17 @@
 }
 
 - (void)startPractice {
+    if ([[StudyDataStore shared] quizForLesson:self.data].count == 0) {
+        UIAlertController *alert =
+            [UIAlertController alertControllerWithTitle:@"暂无练习"
+                                               message:@"这节课还没有测验题"
+                                        preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"好的"
+                                                  style:UIAlertActionStyleDefault
+                                                handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+        return;
+    }
     PracticeViewController *practice = [[PracticeViewController alloc] init];
     practice.lesson = self.data;
     [self.navigationController pushViewController:practice animated:YES];
