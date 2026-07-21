@@ -7,4 +7,5 @@
 
 @interface HomeCell : UITableViewCell
 - (void)configureWithData:(NSDictionary *)data;
+- (void)configureWithData:(NSDictionary *)data completed:(BOOL)completed;
 @end

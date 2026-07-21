@@ -7,52 +7,100 @@
 #import "HomeHeaderView.h"
 #import "HomeCell.h"
 #import "LearnDetailViewController.h"
+#import "StudyDataStore.h"
+#import "MYTheme.h"
 
-@interface HomeViewController () <UITableViewDelegate, UITableViewDataSource>
-
+@interface HomeViewController () <UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating>
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) HomeHeaderView *headerView;
-@property (nonatomic, strong) NSArray<NSDictionary *> *dailyRecommend;
-
+@property (nonatomic, strong) UIView *tableHeaderContainer;
+@property (nonatomic, strong) UIView *filterWrap;
+@property (nonatomic, strong) NSArray<NSDictionary *> *lessons;
+@property (nonatomic, strong) NSArray<NSDictionary *> *filteredLessons;
+@property (nonatomic, strong) UISearchController *searchController;
+@property (nonatomic, assign) NSInteger filterMode; // 0 all, 1 todo, 2 done, 3 bookmark
+@property (nonatomic, strong) UISegmentedControl *filterControl;
 @end
 
 @implementation HomeViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.title = @"iOS学习助手";
-    self.view.backgroundColor = [UIColor whiteColor];
+    self.title = @"iOS 学习助手";
+    self.view.backgroundColor = [MYTheme backgroundColor];
+    self.filterMode = 0;
     
-    [self loadData];
+    [self setupSearch];
     [self setupTableView];
+    [self reloadData];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadData)
+                                                 name:StudyDataDidChangeNotification object:nil];
 }
 
-- (void)loadData {
-    self.dailyRecommend = @[
-        @{@"title": @"Objective-C 基础语法", @"desc": @"数据类型、方法调用、属性声明", @"time": @"15分钟", @"tag": @"入门"},
-        @{@"title": @"AutoLayout 约束实战", @"desc": @"纯代码布局与Masonry使用技巧", @"time": @"20分钟", @"tag": @"进阶"},
-        @{@"title": @"UITableView 复用机制", @"desc": @"Cell重用池、高度缓存、滑动优化", @"time": @"25分钟", @"tag": @"核心"},
-        @{@"title": @"网络请求与数据解析", @"desc": @"NSURLSession + JSON模型转换", @"time": @"30分钟", @"tag": @"进阶"},
-        @{@"title": @"CoreData 数据持久化", @"desc": @"增删改查、多线程、迁移", @"time": @"35分钟", @"tag": @"高阶"},
-        @{@"title": @"多线程与 GCD", @"desc": @"队列、信号量、死锁避免", @"time": @"25分钟", @"tag": @"核心"},
-        @{@"title": @"内存管理与 ARC", @"desc": @"循环引用、weak/strong、自动释放池", @"time": @"20分钟", @"tag": @"核心"},
-        @{@"title": @"App 上架全流程", @"desc": @"证书、打包、TestFlight、审核", @"time": @"15分钟", @"tag": @"实战"},
-    ];
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.headerView refresh];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    [self updateTableHeaderLayoutIfNeeded];
+}
+
+- (void)setupSearch {
+    self.searchController = [[UISearchController alloc] initWithSearchResultsController:nil];
+    self.searchController.searchResultsUpdater = self;
+    self.searchController.obscuresBackgroundDuringPresentation = NO;
+    self.searchController.searchBar.placeholder = @"搜索课程、知识点";
+    self.navigationItem.searchController = self.searchController;
+    self.navigationItem.hidesSearchBarWhenScrolling = YES;
+    self.definesPresentationContext = YES;
 }
 
 - (void)setupTableView {
     self.tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    self.tableView.rowHeight = 80;
+    self.tableView.rowHeight = 92;
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-    self.tableView.backgroundColor = [UIColor colorWithWhite:0.97 alpha:1.0];
+    self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.translatesAutoresizingMaskIntoConstraints = NO;
+    self.tableView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     [self.tableView registerClass:[HomeCell class] forCellReuseIdentifier:@"HomeCell"];
     [self.view addSubview:self.tableView];
     
-    self.headerView = [[HomeHeaderView alloc] initWithFrame:CGRectMake(0, 0, UIScreen.mainScreen.bounds.size.width, 180)];
-    self.tableView.tableHeaderView = self.headerView;
+    CGFloat width = UIScreen.mainScreen.bounds.size.width;
+    self.headerView = [[HomeHeaderView alloc] initWithFrame:CGRectMake(0, 0, width, 210)];
+    __weak typeof(self) weakSelf = self;
+    self.headerView.onContinue = ^{
+        [weakSelf continueLearning];
+    };
+    
+    self.filterWrap = [[UIView alloc] initWithFrame:CGRectMake(0, 210, width, 54)];
+    self.filterControl = [[UISegmentedControl alloc] initWithItems:@[@"全部", @"待学", @"已完成", @"收藏"]];
+    self.filterControl.selectedSegmentIndex = 0;
+    self.filterControl.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.filterControl addTarget:self action:@selector(filterChanged) forControlEvents:UIControlEventValueChanged];
+    [self.filterWrap addSubview:self.filterControl];
+    
+    NSLayoutConstraint *filterTrailing = [self.filterControl.trailingAnchor constraintEqualToAnchor:self.filterWrap.trailingAnchor constant:-20];
+    filterTrailing.priority = UILayoutPriorityDefaultHigh;
+    [NSLayoutConstraint activateConstraints:@[
+        [self.filterControl.leadingAnchor constraintEqualToAnchor:self.filterWrap.leadingAnchor constant:20],
+        filterTrailing,
+        [self.filterControl.centerYAnchor constraintEqualToAnchor:self.filterWrap.centerYAnchor],
+    ]];
+    
+    self.tableHeaderContainer = [[UIView alloc] initWithFrame:CGRectMake(0, 0, width, 264)];
+    self.tableHeaderContainer.backgroundColor = [UIColor clearColor];
+    [self.tableHeaderContainer addSubview:self.headerView];
+    [self.tableHeaderContainer addSubview:self.filterWrap];
+    self.tableView.tableHeaderView = self.tableHeaderContainer;
     
     [NSLayoutConstraint activateConstraints:@[
         [self.tableView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
@@ -62,26 +110,126 @@
     ]];
 }
 
-#pragma mark - UITableViewDataSource
+- (void)updateTableHeaderLayoutIfNeeded {
+    if (!self.tableHeaderContainer || self.tableView.bounds.size.width <= 0) return;
+    
+    CGFloat width = self.tableView.bounds.size.width;
+    CGFloat headerHeight = 210;
+    CGFloat filterHeight = 54;
+    CGFloat totalHeight = headerHeight + filterHeight;
+    
+    BOOL needsUpdate = fabs(self.tableHeaderContainer.bounds.size.width - width) > 0.5
+        || fabs(self.tableHeaderContainer.bounds.size.height - totalHeight) > 0.5;
+    if (!needsUpdate) return;
+    
+    self.tableHeaderContainer.frame = CGRectMake(0, 0, width, totalHeight);
+    self.headerView.frame = CGRectMake(0, 0, width, headerHeight);
+    self.filterWrap.frame = CGRectMake(0, headerHeight, width, filterHeight);
+    
+    // Re-assign to force UITableView to pick up the new header size.
+    self.tableView.tableHeaderView = self.tableHeaderContainer;
+}
+
+- (void)reloadData {
+    self.lessons = [[StudyDataStore shared] dailyRecommend];
+    [self applyFilterAndSearch];
+    [self.headerView refresh];
+}
+
+- (void)filterChanged {
+    self.filterMode = self.filterControl.selectedSegmentIndex;
+    [self applyFilterAndSearch];
+}
+
+- (void)applyFilterAndSearch {
+    StudyDataStore *store = [StudyDataStore shared];
+    NSArray *source = (self.filterMode == 3) ? [store bookmarkedLessons] : self.lessons;
+    
+    NSMutableArray *filtered = [NSMutableArray array];
+    for (NSDictionary *lesson in source) {
+        NSString *lid = lesson[@"id"];
+        BOOL done = [store isLessonCompleted:lid];
+        if (self.filterMode == 1 && done) continue;
+        if (self.filterMode == 2 && !done) continue;
+        [filtered addObject:lesson];
+    }
+    
+    NSString *keyword = self.searchController.searchBar.text ?: @"";
+    keyword = [keyword stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
+    if (keyword.length) {
+        NSPredicate *pred = [NSPredicate predicateWithBlock:^BOOL(NSDictionary *lesson, NSDictionary *bindings) {
+            NSString *title = lesson[@"title"] ?: @"";
+            NSString *desc = lesson[@"desc"] ?: @"";
+            NSString *tag = lesson[@"tag"] ?: @"";
+            return [title localizedCaseInsensitiveContainsString:keyword]
+                || [desc localizedCaseInsensitiveContainsString:keyword]
+                || [tag localizedCaseInsensitiveContainsString:keyword];
+        }];
+        filtered = [[filtered filteredArrayUsingPredicate:pred] mutableCopy];
+    }
+    
+    self.filteredLessons = filtered;
+    [self.tableView reloadData];
+}
+
+- (void)continueLearning {
+    NSDictionary *next = [[StudyDataStore shared] nextLessonToContinue];
+    if (!next) return;
+    [self openLesson:next];
+}
+
+- (void)openLesson:(NSDictionary *)lesson {
+    LearnDetailViewController *detailVC = [[LearnDetailViewController alloc] init];
+    detailVC.data = lesson;
+    detailVC.hidesBottomBarWhenPushed = YES;
+    [self.navigationController pushViewController:detailVC animated:YES];
+}
+
+#pragma mark - Search
+
+- (void)updateSearchResultsForSearchController:(UISearchController *)searchController {
+    [self applyFilterAndSearch];
+}
+
+#pragma mark - Table
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return self.dailyRecommend.count;
+    return self.filteredLessons.count;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     HomeCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeCell" forIndexPath:indexPath];
-    [cell configureWithData:self.dailyRecommend[indexPath.row]];
+    NSDictionary *lesson = self.filteredLessons[indexPath.row];
+    BOOL done = [[StudyDataStore shared] isLessonCompleted:lesson[@"id"]];
+    [cell configureWithData:lesson completed:done];
     return cell;
 }
 
-#pragma mark - UITableViewDelegate
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    LearnDetailViewController *detailVC = [[LearnDetailViewController alloc] init];
-    detailVC.data = self.dailyRecommend[indexPath.row];
-    detailVC.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:detailVC animated:YES];
+    [self openLesson:self.filteredLessons[indexPath.row]];
+}
+
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    if (self.filteredLessons.count == 0) {
+        UILabel *empty = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 120)];
+        empty.textAlignment = NSTextAlignmentCenter;
+        empty.textColor = [MYTheme textTertiaryColor];
+        empty.font = [UIFont systemFontOfSize:14];
+        empty.text = @"暂无匹配课程，换个筛选试试";
+        return empty;
+    }
+    UIView *wrap = [[UIView alloc] initWithFrame:CGRectMake(0, 0, tableView.bounds.size.width, 36)];
+    UILabel *label = [[UILabel alloc] initWithFrame:CGRectMake(24, 8, 200, 24)];
+    label.text = @"每日推荐";
+    label.font = [UIFont systemFontOfSize:17 weight:UIFontWeightBold];
+    label.textColor = [MYTheme textPrimaryColor];
+    [wrap addSubview:label];
+    return wrap;
+}
+
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
+    return self.filteredLessons.count == 0 ? 120 : 36;
 }
 
 @end

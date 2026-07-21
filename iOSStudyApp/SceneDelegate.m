@@ -5,16 +5,27 @@
 
 #import "SceneDelegate.h"
 #import "MYTabBarController.h"
+#import "MYTheme.h"
 
 @implementation SceneDelegate
+
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
-    UIWindowScene *windowScene = (UIWindowScene *)scene;
-    self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
-    self.window.frame = windowScene.coordinateSpace.bounds;
-    self.window.backgroundColor = [UIColor colorWithRed:0.15 green:0.50 blue:0.85 alpha:1.0];
+    // Ignore external-display / non-application scenes.
+    if (session.role != UIWindowSceneSessionRoleApplication) {
+        return;
+    }
+    if (![scene isKindOfClass:[UIWindowScene class]]) {
+        return;
+    }
     
-    MYTabBarController *tabBarVC = [[MYTabBarController alloc] init];
-    self.window.rootViewController = tabBarVC;
-    [self.window makeKeyAndVisible];
+    UIWindowScene *windowScene = (UIWindowScene *)scene;
+    UIWindow *window = [[UIWindow alloc] initWithWindowScene:windowScene];
+    window.frame = windowScene.coordinateSpace.bounds;
+    window.backgroundColor = [MYTheme backgroundColor];
+    window.tintColor = [MYTheme primaryColor];
+    window.rootViewController = [[MYTabBarController alloc] init];
+    self.window = window;
+    [window makeKeyAndVisible];
 }
+
 @end
