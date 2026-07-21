@@ -10,17 +10,22 @@
 @implementation SceneDelegate
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions {
+    // Ignore external-display / non-application scenes.
+    if (session.role != UIWindowSceneSessionRoleApplication) {
+        return;
+    }
     if (![scene isKindOfClass:[UIWindowScene class]]) {
         return;
     }
     
     UIWindowScene *windowScene = (UIWindowScene *)scene;
-    self.window = [[UIWindow alloc] initWithWindowScene:windowScene];
-    self.window.frame = windowScene.coordinateSpace.bounds;
-    self.window.backgroundColor = [MYTheme backgroundColor];
-    self.window.tintColor = [MYTheme primaryColor];
-    self.window.rootViewController = [[MYTabBarController alloc] init];
-    [self.window makeKeyAndVisible];
+    UIWindow *window = [[UIWindow alloc] initWithWindowScene:windowScene];
+    window.frame = windowScene.coordinateSpace.bounds;
+    window.backgroundColor = [MYTheme backgroundColor];
+    window.tintColor = [MYTheme primaryColor];
+    window.rootViewController = [[MYTabBarController alloc] init];
+    self.window = window;
+    [window makeKeyAndVisible];
 }
 
 @end
