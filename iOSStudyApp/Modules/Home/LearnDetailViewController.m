@@ -11,10 +11,10 @@
 @interface LearnDetailViewController ()
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView *contentView;
+@property (nonatomic, strong) UIStackView *stack;
 @property (nonatomic, strong) UILabel *titleLabel;
 @property (nonatomic, strong) UILabel *tagLabel;
 @property (nonatomic, strong) UILabel *metaLabel;
-@property (nonatomic, strong) UILabel *bodyLabel;
 @property (nonatomic, strong) UIButton *practiceBtn;
 @property (nonatomic, strong) UIButton *completeBtn;
 @property (nonatomic, strong) UIBarButtonItem *bookmarkItem;
@@ -60,61 +60,21 @@
     self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.scrollView addSubview:self.contentView];
     
-    UIView *bannerView = [[UIView alloc] init];
-    bannerView.backgroundColor = [MYTheme primarySoftColor];
-    bannerView.layer.cornerRadius = 18;
-    bannerView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:bannerView];
-    
-    UIImageView *iconView = [[UIImageView alloc] init];
-    iconView.image = [UIImage systemImageNamed:@"book.closed.fill"];
-    iconView.tintColor = [MYTheme primaryColor];
-    iconView.translatesAutoresizingMaskIntoConstraints = NO;
-    [bannerView addSubview:iconView];
-    
-    self.tagLabel = [[UILabel alloc] init];
-    self.tagLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightBold];
-    self.tagLabel.textColor = [MYTheme primaryColor];
-    self.tagLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [bannerView addSubview:self.tagLabel];
-    
-    self.titleLabel = [[UILabel alloc] init];
-    self.titleLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBold];
-    self.titleLabel.textColor = [MYTheme textPrimaryColor];
-    self.titleLabel.numberOfLines = 0;
-    self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.titleLabel];
-    
-    self.metaLabel = [[UILabel alloc] init];
-    self.metaLabel.font = [UIFont systemFontOfSize:13];
-    self.metaLabel.textColor = [MYTheme textSecondaryColor];
-    self.metaLabel.numberOfLines = 0;
-    self.metaLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:self.metaLabel];
-    
-    UIView *bodyCard = [[UIView alloc] init];
-    [MYTheme applyCardStyleToView:bodyCard];
-    bodyCard.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentView addSubview:bodyCard];
-    
-    self.bodyLabel = [[UILabel alloc] init];
-    self.bodyLabel.font = [UIFont systemFontOfSize:15];
-    self.bodyLabel.textColor = [MYTheme textPrimaryColor];
-    self.bodyLabel.numberOfLines = 0;
-    self.bodyLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [bodyCard addSubview:self.bodyLabel];
+    self.stack = [[UIStackView alloc] init];
+    self.stack.axis = UILayoutConstraintAxisVertical;
+    self.stack.spacing = 14;
+    self.stack.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.contentView addSubview:self.stack];
     
     self.completeBtn = [UIButton buttonWithType:UIButtonTypeSystem];
     self.completeBtn.titleLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
     self.completeBtn.layer.cornerRadius = 22;
     self.completeBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.completeBtn addTarget:self action:@selector(toggleComplete) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:self.completeBtn];
     
     self.practiceBtn = [MYTheme primaryButtonWithTitle:@"开始练习"];
     self.practiceBtn.translatesAutoresizingMaskIntoConstraints = NO;
     [self.practiceBtn addTarget:self action:@selector(startPractice) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:self.practiceBtn];
     
     [NSLayoutConstraint activateConstraints:@[
         [self.scrollView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
@@ -128,72 +88,171 @@
         [self.contentView.bottomAnchor constraintEqualToAnchor:self.scrollView.bottomAnchor],
         [self.contentView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
         
-        [bannerView.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20],
-        [bannerView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [bannerView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        [bannerView.heightAnchor constraintEqualToConstant:110],
+        [self.stack.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:16],
+        [self.stack.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
+        [self.stack.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
+        [self.stack.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-28],
         
-        [iconView.centerXAnchor constraintEqualToAnchor:bannerView.centerXAnchor],
-        [iconView.centerYAnchor constraintEqualToAnchor:bannerView.centerYAnchor constant:-10],
-        [iconView.widthAnchor constraintEqualToConstant:36],
-        [iconView.heightAnchor constraintEqualToConstant:36],
-        
-        [self.tagLabel.centerXAnchor constraintEqualToAnchor:bannerView.centerXAnchor],
-        [self.tagLabel.topAnchor constraintEqualToAnchor:iconView.bottomAnchor constant:6],
-        
-        [self.titleLabel.topAnchor constraintEqualToAnchor:bannerView.bottomAnchor constant:20],
-        [self.titleLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.titleLabel.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        
-        [self.metaLabel.topAnchor constraintEqualToAnchor:self.titleLabel.bottomAnchor constant:10],
-        [self.metaLabel.leadingAnchor constraintEqualToAnchor:self.titleLabel.leadingAnchor],
-        [self.metaLabel.trailingAnchor constraintEqualToAnchor:self.titleLabel.trailingAnchor],
-        
-        [bodyCard.topAnchor constraintEqualToAnchor:self.metaLabel.bottomAnchor constant:18],
-        [bodyCard.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [bodyCard.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        
-        [self.bodyLabel.topAnchor constraintEqualToAnchor:bodyCard.topAnchor constant:18],
-        [self.bodyLabel.leadingAnchor constraintEqualToAnchor:bodyCard.leadingAnchor constant:16],
-        [self.bodyLabel.trailingAnchor constraintEqualToAnchor:bodyCard.trailingAnchor constant:-16],
-        [self.bodyLabel.bottomAnchor constraintEqualToAnchor:bodyCard.bottomAnchor constant:-18],
-        
-        [self.completeBtn.topAnchor constraintEqualToAnchor:bodyCard.bottomAnchor constant:22],
-        [self.completeBtn.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.completeBtn.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
         [self.completeBtn.heightAnchor constraintEqualToConstant:44],
-        
-        [self.practiceBtn.topAnchor constraintEqualToAnchor:self.completeBtn.bottomAnchor constant:12],
-        [self.practiceBtn.leadingAnchor constraintEqualToAnchor:self.completeBtn.leadingAnchor],
-        [self.practiceBtn.trailingAnchor constraintEqualToAnchor:self.completeBtn.trailingAnchor],
         [self.practiceBtn.heightAnchor constraintEqualToConstant:48],
-        [self.practiceBtn.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-30],
     ]];
 }
 
+#pragma mark - Section builders
+
+- (UIView *)bannerView {
+    UIView *bannerView = [[UIView alloc] init];
+    bannerView.backgroundColor = [MYTheme primarySoftColor];
+    bannerView.layer.cornerRadius = 18;
+    
+    UIImageView *iconView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"book.closed.fill"]];
+    iconView.tintColor = [MYTheme primaryColor];
+    iconView.translatesAutoresizingMaskIntoConstraints = NO;
+    [bannerView addSubview:iconView];
+    
+    self.tagLabel = [[UILabel alloc] init];
+    self.tagLabel.font = [UIFont systemFontOfSize:12 weight:UIFontWeightBold];
+    self.tagLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    [bannerView addSubview:self.tagLabel];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [bannerView.heightAnchor constraintEqualToConstant:100],
+        [iconView.centerXAnchor constraintEqualToAnchor:bannerView.centerXAnchor],
+        [iconView.centerYAnchor constraintEqualToAnchor:bannerView.centerYAnchor constant:-10],
+        [iconView.widthAnchor constraintEqualToConstant:34],
+        [iconView.heightAnchor constraintEqualToConstant:34],
+        [self.tagLabel.centerXAnchor constraintEqualToAnchor:bannerView.centerXAnchor],
+        [self.tagLabel.topAnchor constraintEqualToAnchor:iconView.bottomAnchor constant:6],
+    ]];
+    return bannerView;
+}
+
+- (UIView *)cardWithTitle:(NSString *)title body:(NSString *)body {
+    UIView *card = [[UIView alloc] init];
+    [MYTheme applyCardStyleToView:card];
+    
+    UILabel *h = [[UILabel alloc] init];
+    h.text = title;
+    h.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
+    h.textColor = [MYTheme textPrimaryColor];
+    h.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    UILabel *b = [[UILabel alloc] init];
+    b.text = body;
+    b.font = [UIFont systemFontOfSize:14];
+    b.textColor = [MYTheme textPrimaryColor];
+    b.numberOfLines = 0;
+    b.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [card addSubview:h];
+    [card addSubview:b];
+    [NSLayoutConstraint activateConstraints:@[
+        [h.topAnchor constraintEqualToAnchor:card.topAnchor constant:14],
+        [h.leadingAnchor constraintEqualToAnchor:card.leadingAnchor constant:14],
+        [h.trailingAnchor constraintEqualToAnchor:card.trailingAnchor constant:-14],
+        [b.topAnchor constraintEqualToAnchor:h.bottomAnchor constant:8],
+        [b.leadingAnchor constraintEqualToAnchor:h.leadingAnchor],
+        [b.trailingAnchor constraintEqualToAnchor:h.trailingAnchor],
+        [b.bottomAnchor constraintEqualToAnchor:card.bottomAnchor constant:-14],
+    ]];
+    return card;
+}
+
+- (NSString *)bulleted:(NSArray *)items prefix:(NSString *)prefix {
+    if (![items isKindOfClass:NSArray.class] || items.count == 0) return @"";
+    NSMutableString *s = [NSMutableString string];
+    [items enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+        if (prefix.length) {
+            [s appendFormat:@"%@%lu  %@\n", prefix, (unsigned long)idx + 1, obj];
+        } else {
+            [s appendFormat:@"• %@\n", obj];
+        }
+    }];
+    return [s stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]];
+}
+
 - (void)configureData {
+    for (UIView *v in self.stack.arrangedSubviews) {
+        [self.stack removeArrangedSubview:v];
+        [v removeFromSuperview];
+    }
+    
     NSString *lessonId = self.data[@"id"];
     StudyDataStore *store = [StudyDataStore shared];
-    
-    self.titleLabel.text = self.data[@"title"];
     NSString *tag = self.data[@"tag"] ?: @"";
-    self.tagLabel.text = [NSString stringWithFormat:@"· %@ ·", tag];
-    self.tagLabel.textColor = [MYTheme tagColorForName:tag];
-    
     BOOL done = [store isLessonCompleted:lessonId];
     BOOL bookmarked = [store isBookmarked:lessonId];
-    self.metaLabel.text = [NSString stringWithFormat:@"预计学习时长: %@  |  难度: %@  |  %@",
-                           self.data[@"time"], [self difficultyForTag:tag],
-                           done ? @"已完成" : @"未完成"];
     
-    NSString *content = self.data[@"content"];
-    if (!content.length) {
-        content = [NSString stringWithFormat:@"%@\n\n暂无详细正文，完成练习也可标记掌握。", self.data[@"desc"] ?: @""];
+    UIView *banner = [self bannerView];
+    self.tagLabel.text = [NSString stringWithFormat:@"· %@ ·", tag];
+    self.tagLabel.textColor = [MYTheme tagColorForName:tag];
+    [self.stack addArrangedSubview:banner];
+    
+    self.titleLabel = [[UILabel alloc] init];
+    self.titleLabel.text = self.data[@"title"];
+    self.titleLabel.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBold];
+    self.titleLabel.textColor = [MYTheme textPrimaryColor];
+    self.titleLabel.numberOfLines = 0;
+    [self.stack addArrangedSubview:self.titleLabel];
+    
+    self.metaLabel = [[UILabel alloc] init];
+    self.metaLabel.font = [UIFont systemFontOfSize:13];
+    self.metaLabel.textColor = [MYTheme textSecondaryColor];
+    self.metaLabel.numberOfLines = 0;
+    self.metaLabel.text = [NSString stringWithFormat:@"预计学习时长: %@  |  难度: %@  |  %@\n%@",
+                           self.data[@"time"] ?: @"—",
+                           [self difficultyForTag:tag],
+                           done ? @"已完成" : @"未完成",
+                           self.data[@"desc"] ?: @""];
+    [self.stack addArrangedSubview:self.metaLabel];
+    
+    NSString *prereq = [self bulleted:self.data[@"prerequisites"] prefix:nil];
+    if (prereq.length) [self.stack addArrangedSubview:[self cardWithTitle:@"前置要求" body:prereq]];
+    
+    NSString *goals = [self bulleted:self.data[@"learningGoals"] prefix:@""];
+    if (goals.length) [self.stack addArrangedSubview:[self cardWithTitle:@"学习目标" body:goals]];
+    
+    NSString *path = [self bulleted:self.data[@"learningPath"] prefix:@"Step "];
+    if (path.length) [self.stack addArrangedSubview:[self cardWithTitle:@"从 0 到 1 学习路径" body:path]];
+    
+    NSArray *chapters = self.data[@"chapters"];
+    if ([chapters isKindOfClass:NSArray.class] && chapters.count) {
+        NSMutableString *lecture = [NSMutableString string];
+        for (NSDictionary *ch in chapters) {
+            if (![ch isKindOfClass:NSDictionary.class]) continue;
+            [lecture appendFormat:@"%@\n\n%@\n\n", ch[@"title"] ?: @"", ch[@"body"] ?: @""];
+        }
+        [self.stack addArrangedSubview:[self cardWithTitle:@"完整讲义" body:[lecture stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]]];
+    } else if ([self.data[@"content"] length]) {
+        [self.stack addArrangedSubview:[self cardWithTitle:@"完整讲义" body:self.data[@"content"]]];
     }
-    self.bodyLabel.text = content;
     
-    UIImage *bookmarkImage = [UIImage systemImageNamed:bookmarked ? @"bookmark.fill" : @"bookmark"];
-    self.bookmarkItem.image = bookmarkImage;
+    NSArray *materials = self.data[@"materials"];
+    if ([materials isKindOfClass:NSArray.class] && materials.count) {
+        NSMutableString *m = [NSMutableString string];
+        for (NSDictionary *item in materials) {
+            if (![item isKindOfClass:NSDictionary.class]) continue;
+            [m appendFormat:@"[%@] %@\n%@\n", item[@"type"] ?: @"资料", item[@"title"] ?: @"", item[@"detail"] ?: @""];
+            if ([item[@"url"] length]) [m appendFormat:@"链接：%@\n", item[@"url"]];
+            [m appendString:@"\n"];
+        }
+        [self.stack addArrangedSubview:[self cardWithTitle:@"完整学习资料" body:[m stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]]];
+    }
+    
+    NSString *check = [self bulleted:self.data[@"checklist"] prefix:nil];
+    if (check.length) [self.stack addArrangedSubview:[self cardWithTitle:@"掌握清单（学完请自检）" body:check]];
+    
+    NSArray *glossary = self.data[@"glossary"];
+    if ([glossary isKindOfClass:NSArray.class] && glossary.count) {
+        NSMutableString *g = [NSMutableString string];
+        for (NSDictionary *item in glossary) {
+            if (![item isKindOfClass:NSDictionary.class]) continue;
+            [g appendFormat:@"%@\n%@\n\n", item[@"term"] ?: @"", item[@"definition"] ?: @""];
+        }
+        [self.stack addArrangedSubview:[self cardWithTitle:@"术语表" body:[g stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]]]];
+    }
+    
+    self.bookmarkItem.image = [UIImage systemImageNamed:bookmarked ? @"bookmark.fill" : @"bookmark"];
     
     if (done) {
         [self.completeBtn setTitle:@"取消完成标记" forState:UIControlStateNormal];
@@ -204,12 +263,18 @@
         [self.completeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         self.completeBtn.backgroundColor = [MYTheme accentColor];
     }
-
+    [self.stack addArrangedSubview:self.completeBtn];
+    
     NSArray *quiz = [store quizForLesson:self.data];
     BOOL hasQuiz = quiz.count > 0;
     self.practiceBtn.hidden = !hasQuiz;
     self.practiceBtn.enabled = hasQuiz;
     self.practiceBtn.alpha = hasQuiz ? 1.0 : 0.0;
+    if (hasQuiz) {
+        [self.practiceBtn setTitle:[NSString stringWithFormat:@"开始练习（%lu 题）", (unsigned long)quiz.count]
+                         forState:UIControlStateNormal];
+        [self.stack addArrangedSubview:self.practiceBtn];
+    }
 }
 
 - (NSString *)difficultyForTag:(NSString *)tag {
@@ -243,9 +308,7 @@
             [UIAlertController alertControllerWithTitle:@"暂无练习"
                                                message:@"这节课还没有测验题"
                                         preferredStyle:UIAlertControllerStyleAlert];
-        [alert addAction:[UIAlertAction actionWithTitle:@"好的"
-                                                  style:UIAlertActionStyleDefault
-                                                handler:nil]];
+        [alert addAction:[UIAlertAction actionWithTitle:@"好的" style:UIAlertActionStyleDefault handler:nil]];
         [self presentViewController:alert animated:YES completion:nil];
         return;
     }

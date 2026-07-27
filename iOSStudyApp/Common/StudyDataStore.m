@@ -49,56 +49,79 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 #pragma mark - Catalog
 
 - (void)buildCatalog {
+    NSArray *loaded = [self loadLessonsFromBundle];
+    if (loaded.count > 0) {
+        self.lessons = loaded;
+        return;
+    }
+    // Fallback if JSON missing from bundle
     self.lessons = @[
-        @{@"id": @"oc-basics", @"title": @"Objective-C 基础语法", @"desc": @"数据类型、方法调用、属性声明",
-          @"time": @"15分钟", @"minutes": @15, @"tag": @"入门", @"category": @"syntax",
-          @"content": @"Objective-C 是 iOS 早期主流语言，理解它能帮你读懂大量存量代码与底层文档。\n\n一、概念理解\n\nOC 基于 C 语言，加入了面向对象消息发送机制。对象通过指针引用，消息通过 [receiver method] 调用。\n\n二、核心要点\n\n1. 熟悉 NSInteger、CGFloat、BOOL 等常用类型\n2. 掌握 @property / @synthesize 与自动生成访问器\n3. 理解实例方法 (-) 与类方法 (+)\n4. 学会阅读头文件接口定义\n\n三、代码示例\n\n@interface Person : NSObject\n@property (nonatomic, copy) NSString *name;\n- (void)sayHello;\n@end\n\n四、注意事项\n\n• 字符串优先用 copy\n• 避免在 init/dealloc 中调用可被重写的方法\n• 熟悉 nil 消息安全机制"},
-        @{@"id": @"autolayout", @"title": @"AutoLayout 约束实战", @"desc": @"纯代码布局与 Masonry 使用技巧",
-          @"time": @"20分钟", @"minutes": @20, @"tag": @"进阶", @"category": @"uikit",
-          @"content": @"AutoLayout 让界面适配不同屏幕尺寸。\n\n一、概念理解\n\n约束描述视图之间的关系。优先使用 NSLayoutAnchor，也可用第三方 DSL。\n\n二、核心要点\n\n1. translatesAutoresizingMaskIntoConstraints = NO\n2. 明确宽高或相对关系，避免约束冲突\n3. 使用 Content Hugging / Compression Resistance\n4. 动态高度 Cell 需要正确设置约束链\n\n三、代码示例\n\nlabel.translatesAutoresizingMaskIntoConstraints = NO;\n[NSLayoutConstraint activateConstraints:@[\n  [label.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:16],\n  [label.topAnchor constraintEqualToAnchor:view.safeAreaLayoutGuide.topAnchor constant:16]\n]];\n\n四、注意事项\n\n• 冲突时用优先级拆解\n• 避免循环依赖\n• 旋转后检查布局更新"},
-        @{@"id": @"tableview", @"title": @"UITableView 复用机制", @"desc": @"Cell 重用池、高度缓存、滑动优化",
-          @"time": @"25分钟", @"minutes": @25, @"tag": @"核心", @"category": @"uikit",
-          @"content": @"列表性能是 iOS 面试与实战的高频主题。\n\n一、概念理解\n\nUITableView 通过复用池减少创建成本，只保留可见区域附近的 Cell。\n\n二、核心要点\n\n1. registerClass / dequeueReusableCell\n2. 在 prepareForReuse 重置状态\n3. estimatedRowHeight + 自动高度\n4. 异步加载图片并取消过期任务\n\n三、代码示例\n\n[tableView registerClass:HomeCell.class forCellReuseIdentifier:@\"HomeCell\"];\nHomeCell *cell = [tableView dequeueReusableCellWithIdentifier:@\"HomeCell\" forIndexPath:indexPath];\n\n四、注意事项\n\n• 避免在 cellForRow 做重计算\n• 图片占位与尺寸固定减少抖动\n• 主线程只做轻量 UI 更新"},
-        @{@"id": @"network", @"title": @"网络请求与数据解析", @"desc": @"NSURLSession + JSON 模型转换",
-          @"time": @"30分钟", @"minutes": @30, @"tag": @"进阶", @"category": @"network",
-          @"content": @"移动端几乎都会和后端交互。\n\n一、概念理解\n\nNSURLSession 是系统推荐网络栈，配合 JSONSerialization 或模型库完成解析。\n\n二、核心要点\n\n1. dataTask / downloadTask 的区别\n2. HTTP 状态码与错误域处理\n3. 主线程回调更新 UI\n4. 取消任务与超时配置\n\n三、代码示例\n\nNSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *resp, NSError *error) {\n  // parse on background, update UI on main\n}];\n[task resume];\n\n四、注意事项\n\n• ATS 与 HTTPS\n• 敏感信息不写死在客户端\n• 做好弱网重试与幂等"},
-        @{@"id": @"coredata", @"title": @"CoreData 数据持久化", @"desc": @"增删改查、多线程、迁移",
-          @"time": @"35分钟", @"minutes": @35, @"tag": @"高阶", @"category": @"storage",
-          @"content": @"Core Data 适合结构化本地数据与复杂查询。\n\n一、概念理解\n\nNSManagedObjectContext 管理对象图，配合 Persistent Store 落盘。\n\n二、核心要点\n\n1. 主上下文与后台上下文分工\n2. performBlock 保证线程安全\n3. 轻量迁移与版本管理\n4. 批量删除与故障恢复\n\n三、代码示例\n\nNSFetchRequest *request = [MyEntity fetchRequest];\nrequest.predicate = [NSPredicate predicateWithFormat:@\"done == NO\"];\nNSArray *result = [context executeFetchRequest:request error:nil];\n\n四、注意事项\n\n• 不要跨线程传递 ManagedObject\n• 大对象考虑外存\n• 保存失败要处理 merge 冲突"},
-        @{@"id": @"gcd", @"title": @"多线程与 GCD", @"desc": @"队列、信号量、死锁避免",
-          @"time": @"25分钟", @"minutes": @25, @"tag": @"核心", @"category": @"concurrency",
-          @"content": @"并发写不好就会卡顿甚至崩溃。\n\n一、概念理解\n\nGCD 用队列调度任务。串行队列保序，并发队列提吞吐。\n\n二、核心要点\n\n1. sync / async 的区别\n2. 主队列不要 sync 自己（死锁）\n3. dispatch_group / semaphore 的适用场景\n4. barrier 保护并发写\n\n三、代码示例\n\ndispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{\n  // 耗时任务\n  dispatch_async(dispatch_get_main_queue(), ^{\n    // 更新 UI\n  });\n});\n\n四、注意事项\n\n• UI 必须在主线程\n• 合理选择 QoS\n• 避免无界并发打爆资源"},
-        @{@"id": @"arc", @"title": @"内存管理与 ARC", @"desc": @"循环引用、weak/strong、自动释放池",
-          @"time": @"20分钟", @"minutes": @20, @"tag": @"核心", @"category": @"syntax",
-          @"content": @"ARC 降低了手动 retain/release 成本，但循环引用仍需警惕。\n\n一、概念理解\n\n强引用延长生命周期，弱引用不增加引用计数。\n\n二、核心要点\n\n1. block 捕获 self 的常见环\n2. weak-strong dance\n3. delegate 通常用 weak\n4. @autoreleasepool 批量临时对象\n\n三、代码示例\n\n__weak typeof(self) weakSelf = self;\nself.completion = ^{\n  __strong typeof(weakSelf) strongSelf = weakSelf;\n  [strongSelf refresh];\n};\n\n四、注意事项\n\n• 工具：Instruments Leaks / Debug Memory Graph\n• 及时置空定时器与观察者\n• 大图注意解码尺寸"},
-        @{@"id": @"release", @"title": @"App 上架全流程", @"desc": @"证书、打包、TestFlight、审核",
-          @"time": @"15分钟", @"minutes": @15, @"tag": @"实战", @"category": @"security",
-          @"content": @"从开发到上架是完整交付能力的一部分。\n\n一、概念理解\n\n证书、描述文件、Bundle ID 共同决定签名身份。\n\n二、核心要点\n\n1. Development / Distribution 证书\n2. Archive + Organizer 上传\n3. TestFlight 内测\n4. 审核常见驳回点（隐私、登录、崩溃）\n\n三、代码示例\n\n// Info.plist 配置隐私用途说明\n// NSCameraUsageDescription = 用于扫描学习资料\n\n四、注意事项\n\n• 版本号与 Build 号递增\n• 准备审核账号与演示数据\n• 关注出口合规与加密声明"},
-        @{@"id": @"uikit-nav", @"title": @"导航与页面流转", @"desc": @"UINavigationController 与模态呈现",
-          @"time": @"18分钟", @"minutes": @18, @"tag": @"入门", @"category": @"uikit",
-          @"content": @"掌握页面栈才能组织复杂 App。\n\n一、概念理解\n\nPush 进入层级，Present 弹出临时任务。\n\n二、核心要点\n\n1. hidesBottomBarWhenPushed\n2. 自定义转场\n3. 返回手势与拦截\n4. 大标题与外观统一\n\n三、注意事项\n\n• 避免过深导航栈\n• 统一返回行为\n• 注意内存中多个 VC 并存"},
-        @{@"id": @"json-model", @"title": @"JSON 与模型映射", @"desc": @"字典转模型、可选字段与容错",
-          @"time": @"22分钟", @"minutes": @22, @"tag": @"进阶", @"category": @"network",
-          @"content": @"接口字段经常变化，容错很重要。\n\n一、核心要点\n\n1. 类型校验\n2. 默认值策略\n3. 嵌套模型\n4. 列表解析\n\n二、注意事项\n\n• 不要假设字段一定存在\n• 日志脱敏\n• 单测覆盖异常 JSON"},
-        @{@"id": @"sqlite", @"title": @"SQLite 轻量存储", @"desc": @"适合缓存与简单关系数据",
-          @"time": @"20分钟", @"minutes": @20, @"tag": @"进阶", @"category": @"storage",
-          @"content": @"当不需要 Core Data 全套能力时，SQLite / FMDB 更轻。\n\n核心要点：事务、索引、迁移脚本、主线程禁止重查询。"},
-        @{@"id": @"operation", @"title": @"NSOperation 任务编排", @"desc": @"依赖、取消与最大并发数",
-          @"time": @"24分钟", @"minutes": @24, @"tag": @"高阶", @"category": @"concurrency",
-          @"content": @"比纯 GCD 更适合可取消、有依赖的任务流。\n\n核心要点：isFinished/KVO、queue Priority、避免在主队列塞重任务。"},
-        @{@"id": @"keystore", @"title": @"Keychain 与本地安全", @"desc": @"令牌存储、生物识别补充",
-          @"time": @"16分钟", @"minutes": @16, @"tag": @"实战", @"category": @"security",
-          @"content": @"密码和 Token 不要放 UserDefaults。\n\n使用 Keychain Services，并结合 Face ID / Touch ID 做二次确认。"},
-        @{@"id": @"runtime", @"title": @"Runtime 与消息转发", @"desc": @"Method Swizzling 边界与风险",
-          @"time": @"28分钟", @"minutes": @28, @"tag": @"高阶", @"category": @"syntax",
-          @"content": @"Runtime 强大但危险。只在充分理解副作用时使用 Swizzling，并做好版本兼容。"},
-        @{@"id": @"perf", @"title": @"启动与滑动性能优化", @"desc": @"Time Profiler、卡顿排查思路",
-          @"time": @"30分钟", @"minutes": @30, @"tag": @"实战", @"category": @"uikit",
-          @"content": @"优化要先测量。关注 main() 前耗时、首屏渲染、离屏渲染与过度绘制。"},
-        @{@"id": @"ats", @"title": @"ATS 与网络安全", @"desc": @"证书锁定、明文限制例外",
-          @"time": @"14分钟", @"minutes": @14, @"tag": @"核心", @"category": @"security",
-          @"content": @"默认要求 HTTPS。临时例外要最小化，并尽快移除。"},
+        @{@"id": @"oc-basics", @"title": @"Objective-C 基础语法", @"desc": @"请将 lessons.json 加入 Copy Bundle Resources",
+          @"time": @"60分钟", @"minutes": @60, @"tag": @"入门", @"category": @"syntax",
+          @"content": @"教材文件未打包进 App。请确认 iOSStudyApp/Resources/lessons.json 已加入 Target 的 Copy Bundle Resources。"}
     ];
+}
+
+- (NSArray<NSDictionary *> *)loadLessonsFromBundle {
+    NSURL *url = [[NSBundle mainBundle] URLForResource:@"lessons" withExtension:@"json"];
+    if (!url) return @[];
+    NSData *data = [NSData dataWithContentsOfURL:url];
+    if (!data) return @[];
+    NSError *error = nil;
+    id obj = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    if (error || ![obj isKindOfClass:NSDictionary.class]) return @[];
+    NSArray *raw = obj[@"lessons"];
+    if (![raw isKindOfClass:NSArray.class]) return @[];
+    
+    NSMutableArray *result = [NSMutableArray arrayWithCapacity:raw.count];
+    for (NSDictionary *item in raw) {
+        if (![item isKindOfClass:NSDictionary.class]) continue;
+        NSMutableDictionary *lesson = [item mutableCopy];
+        if (![lesson[@"content"] isKindOfClass:NSString.class] || ![lesson[@"content"] length]) {
+            lesson[@"content"] = [self composeContentFromLesson:item];
+        }
+        if (![lesson[@"minutes"] isKindOfClass:NSNumber.class]) {
+            NSString *time = [NSString stringWithFormat:@"%@", lesson[@"time"] ?: @"30分钟"];
+            NSInteger mins = time.integerValue;
+            lesson[@"minutes"] = @(mins > 0 ? mins : 30);
+        }
+        [result addObject:[lesson copy]];
+    }
+    return result;
+}
+
+- (NSString *)composeContentFromLesson:(NSDictionary *)lesson {
+    NSMutableString *text = [NSMutableString string];
+    NSArray *goals = lesson[@"learningGoals"];
+    if ([goals isKindOfClass:NSArray.class] && goals.count) {
+        [text appendString:@"【学习目标】\n"];
+        [goals enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [text appendFormat:@"%lu. %@\n", (unsigned long)idx + 1, obj];
+        }];
+        [text appendString:@"\n"];
+    }
+    NSArray *prereq = lesson[@"prerequisites"];
+    if ([prereq isKindOfClass:NSArray.class] && prereq.count) {
+        [text appendString:@"【前置要求】\n"];
+        for (id p in prereq) [text appendFormat:@"• %@\n", p];
+        [text appendString:@"\n"];
+    }
+    NSArray *path = lesson[@"learningPath"];
+    if ([path isKindOfClass:NSArray.class] && path.count) {
+        [text appendString:@"【学习路径】\n"];
+        [path enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+            [text appendFormat:@"Step %lu  %@\n", (unsigned long)idx + 1, obj];
+        }];
+        [text appendString:@"\n"];
+    }
+    NSArray *chapters = lesson[@"chapters"];
+    if ([chapters isKindOfClass:NSArray.class]) {
+        for (NSDictionary *ch in chapters) {
+            if (![ch isKindOfClass:NSDictionary.class]) continue;
+            [text appendFormat:@"%@\n\n%@\n\n", ch[@"title"] ?: @"", ch[@"body"] ?: @""];
+        }
+    }
+    return text;
 }
 
 - (NSArray<NSDictionary *> *)allLessons {
@@ -191,6 +214,10 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 }
 
 - (NSArray<NSDictionary *> *)quizForLesson:(NSDictionary *)lesson {
+    NSArray *own = lesson[@"quiz"];
+    if ([own isKindOfClass:NSArray.class] && own.count > 0) {
+        return own;
+    }
     NSString *category = lesson[@"category"] ?: @"syntax";
     NSDictionary *bank = @{
         @"syntax": @[

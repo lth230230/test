@@ -26,6 +26,7 @@
 		B10018 /* PracticeViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20033; };
 		B10019 /* CourseListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20035; };
 		B10020 /* ResourceDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20037; };
+		B10021 /* lessons.json in Resources */ = {isa = PBXBuildFile; fileRef = B20039; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,6 +68,7 @@
 		B20036 /* CourseListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CourseListViewController.h; sourceTree = "<group>"; };
 		B20037 /* ResourceDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ResourceDetailViewController.m; sourceTree = "<group>"; };
 		B20038 /* ResourceDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ResourceDetailViewController.h; sourceTree = "<group>"; };
+		B20039 /* lessons.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = lessons.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,7 +86,7 @@
 		B40003 /* Products */ = {isa = PBXGroup; children = (B20028); name = Products; sourceTree = "<group>"; };
 		B40004 /* Base */ = {isa = PBXGroup; children = (B20015, B20004, B20016, B20005); path = Base; sourceTree = "<group>"; };
 		B40005 /* Modules */ = {isa = PBXGroup; children = (B40007 /* Home */, B40008 /* Learn */, B40013 /* Practice */, B40009 /* Resources */, B40011 /* Settings */); path = Modules; sourceTree = "<group>"; };
-		B40006 /* Resources */ = {isa = PBXGroup; children = (); path = Resources; sourceTree = "<group>"; };
+		B40006 /* Resources */ = {isa = PBXGroup; children = (B20039); path = Resources; sourceTree = "<group>"; };
 		B40007 /* Home */ = {isa = PBXGroup; children = (B20017, B20006, B20018, B20007, B20019, B20008, B20020, B20009); path = Home; sourceTree = "<group>"; };
 		B40008 /* Learn */ = {isa = PBXGroup; children = (B20021, B20010, B20036, B20035); path = Learn; sourceTree = "<group>"; };
 		B40009 /* Resources */ = {isa = PBXGroup; children = (B20025, B20011, B20038, B20037); path = Resources; sourceTree = "<group>"; };
@@ -126,7 +128,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		B60002 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		B60002 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B10021); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */

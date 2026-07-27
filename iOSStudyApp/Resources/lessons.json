@@ -1,0 +1,2647 @@
+{
+  "version": 2,
+  "lessons": [
+    {
+      "id": "oc-basics",
+      "title": "Objective-C 基础语法",
+      "desc": "从零掌握类型、类、属性、方法与消息机制，能独立编写第一个 OC 类",
+      "time": "60分钟",
+      "minutes": 60,
+      "tag": "入门",
+      "category": "syntax",
+      "prerequisites": [
+        "会安装 Xcode",
+        "了解任意一门编程语言的变量与函数概念更佳（非必须）"
+      ],
+      "learningGoals": [
+        "看懂 .h / .m 文件结构并创建自己的类",
+        "正确使用常用数据类型与 @property 修饰符",
+        "理解实例方法、类方法与消息发送",
+        "理解 nil 安全与基本命名约定",
+        "能完成一个带初始化方法的模型类并在控制台验证"
+      ],
+      "learningPath": [
+        "环境确认：新建 Empty Objective-C 类并编译通过",
+        "精读本章「类型与对象」并手敲示例",
+        "完成「Person / Student」练手项目",
+        "对照掌握清单自测，不会的点回看术语表",
+        "完成课后测验，错题回看对应章节"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 你为什么要学 Objective-C",
+          "body": "即使今天主流是 Swift，大量系统 API、第三方库、公司存量代码仍是 Objective-C。\n学会 OC，你能：\n1）阅读 UIKit/Foundation 头文件；\n2）理解 Runtime、内存模型等面试高频点；\n3）在混编项目里自信改 Bug。\n本课目标不是背语法，而是「能写、能读、能排查」。"
+        },
+        {
+          "title": "第1章 工程里的 OC 长什么样",
+          "body": "典型文件：\n• MyClass.h：对外接口（别人 include 的契约）\n• MyClass.m：实现细节\n• 入口仍是 main.m / AppDelegate / SceneDelegate\n\n编译单元：每个 .m 编译成 .o，最后链接成 App。\n头文件用 #import 防止重复包含；不要在 .h 里写不必要的实现细节。\n\n最小类骨架：\n@interface Greeter : NSObject\n- (void)hello;\n@end\n\n@implementation Greeter\n- (void)hello { NSLog(@\"hi\"); }\n@end"
+        },
+        {
+          "title": "第2章 类型系统（从 C 到对象）",
+          "body": "基础标量（常用）：\n• NSInteger / NSUInteger：适配 32/64 位的整数别名\n• CGFloat：绘图相关浮点\n• BOOL：YES / NO\n• 还有 C 的 int、float、double（能用但团队常偏好 NS* 风格）\n\n对象类型：\n• 所有对象变量都是指针：NSString *name;\n• id：任意对象（弱类型，慎用）\n• instancetype：表示返回同类实例，利于编译期检查\n\n字面量：\n@\"hello\"、@42、@YES、@{@\"k\":@\"v\"}、@[@\"a\", @\"b\"]\n\n关键心智模型：对象在堆上，变量保存的是地址。"
+        },
+        {
+          "title": "第3章 类、对象与初始化",
+          "body": "创建：\nPerson *p = [[Person alloc] init];\n或便捷构造：[[Person alloc] initWithName:@\"Ada\"]\n\n指定初始化方法（Designated Initializer）惯例：\n1）调用 [super init…]\n2）判断 self 是否非 nil\n3）初始化实例变量\n4）返回 self\n\n示例：\n- (instancetype)initWithName:(NSString *)name {\n    self = [super init];\n    if (self) {\n        _name = [name copy];\n        _age = 0;\n    }\n    return self;\n}\n\n禁止：在 init 里调用可能被子类重写的方法（生命周期未稳定）。"
+        },
+        {
+          "title": "第4章 属性 @property 与内存语义",
+          "body": "@property 会生成 getter/setter（除非 readonly）及实例变量（默认 _name）。\n\n常用特性：\n• nonatomic：日常 UI 开发最常见（非原子，性能更好）\n• strong：强持有对象\n• weak：弱引用，对象释放后自动变 nil（delegate 常用）\n• copy：对 NSString / block 很重要，防止外部可变对象捣乱\n• assign：基本类型；对象上慎用（野指针风险）\n\n读写示例：\np.name = @\"Ada\";\nNSString *n = p.name;\n\n内部实现可用 self.name 或 _name；init/dealloc 中更推荐直接用 _ivar。"
+        },
+        {
+          "title": "第5章 方法与消息发送",
+          "body": "语法：[receiver method] 或 [receiver method:arg]\n\n实例方法：- (void)sayHello;\n类方法：+ (instancetype)personWithName:(NSString *)name;\n\n多参数：\n- (void)setX:(CGFloat)x y:(CGFloat)y;\n\n消息发送特点：\n• 向 nil 发消息通常安全，返回 0/nil\n• 但不要依赖「发消息产生副作用」——receiver 为 nil 时副作用不会发生\n\n选择器 SEL：@selector(sayHello)\n可做动态调用，但本课先掌握静态调用即可。"
+        },
+        {
+          "title": "第6章 协议、分类与头文件组织（入门级）",
+          "body": "协议 @protocol：定义「能做什么」，类似接口。\n例如 UITableViewDataSource。\n\n分类 Category：给已有类加方法（不要乱加属性存储）。\n本课只需认识：你在头文件看到的 UIView (UIViewGeometry) 就是分类。\n\n头文件建议：\n• .h 只暴露别人需要的\n• 能 @class 前向声明就不要 #import 重量级头（打破循环依赖）"
+        },
+        {
+          "title": "第7章 综合实战：Student 学习卡片",
+          "body": "需求：\n• 属性：name(copy)、score(assign)\n• 指定初始化 initWithName:score:\n• 实例方法 - (NSString *)report\n• 类方法 + (instancetype)demoStudent\n\n验收：\n在某个 VC 的 viewDidLoad 创建 demoStudent 并 NSLog report。\n若能稳定打印，说明你已完成「从 0 到 1」的 OC 类编写闭环。"
+        },
+        {
+          "title": "第8章 排错清单",
+          "body": "编译报错常见：\n• 找不到符号：忘记把 .m 加到 Target Membership\n• Duplicate symbol：重复实现或错误 #import .m\n• 属性无法点语法：没声明 @property / 拼写错误\n\n运行异常常见：\n• unrecognized selector：方法名写错或对象类型不符\n• EXC_BAD_ACCESS：野指针，检查 assign 用在对象上、过早释放等\n\n工具：断点、异常断点、NSLog、LLDB po。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Apple：Programming with Objective-C",
+          "type": "官方文档",
+          "detail": "官方语言概念总览，建议通读 Objects / Messaging 两章",
+          "url": "https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/"
+        },
+        {
+          "title": "NSObject 文档",
+          "type": "API 文档",
+          "detail": "搞清 alloc/init/description 等根基 API",
+          "url": "https://developer.apple.com/documentation/objectivec/nsobject"
+        },
+        {
+          "title": "本课练手仓库任务",
+          "type": "练习项目",
+          "detail": "实现 Student 类并通过控制台验收（见第7章）"
+        },
+        {
+          "title": "Effective Objective-C 2.0（选读）",
+          "type": "书籍",
+          "detail": "前 5 章：类、属性、消息、协议、分类"
+        }
+      ],
+      "checklist": [
+        "能解释 .h 与 .m 的职责差异",
+        "能写出带指定初始化方法的类",
+        "能正确选择 strong/weak/copy/assign",
+        "能区分 - 与 + 方法并调用",
+        "知道向 nil 发消息的基本行为",
+        "完成 Student 练手并输出 report",
+        "课后测验正确率 ≥ 80%"
+      ],
+      "glossary": [
+        {
+          "term": "消息发送",
+          "definition": "OC 方法调用机制，运行期查找实现，写作 [obj method]"
+        },
+        {
+          "term": "指定初始化方法",
+          "definition": "类的主初始化入口，其他便利构造最终应汇聚到它"
+        },
+        {
+          "term": "属性特性",
+          "definition": "@property 括号中的 strong/weak/copy 等，描述所有权与原子性"
+        },
+        {
+          "term": "id / instancetype",
+          "definition": "id 是任意对象；instancetype 表示返回当前类实例"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "实例方法的前缀是？",
+          "options": [
+            "+",
+            "-",
+            "*",
+            "@"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "NSString 属性更推荐？",
+          "options": [
+            "assign",
+            "weak",
+            "copy",
+            "unsafe_unretained 必选"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "delegate 常用？",
+          "options": [
+            "strong",
+            "copy",
+            "weak",
+            "只能用 assign"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "[[A alloc] init] 中 alloc 的作用？",
+          "options": [
+            "发送网络请求",
+            "分配对象内存",
+            "绘制 UI",
+            "注册通知"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "向 nil 发消息通常？",
+          "options": [
+            "必崩溃",
+            "多数情况安全并返回 0/nil",
+            "自动改成空字符串",
+            "编译失败"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "autolayout",
+      "title": "AutoLayout 约束实战",
+      "desc": "从零学会纯代码约束、优先级、安全区与自适应布局闭环",
+      "time": "70分钟",
+      "minutes": 70,
+      "tag": "进阶",
+      "category": "uikit",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解AutoLayout 约束实战的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 为什么学、学到什么程度",
+          "body": "本课把你从「会拖控件/会写 frame」带到「能用约束独立完成适配页面」。学完应能手写卡片布局，并看懂冲突日志。"
+        },
+        {
+          "title": "第1章 约束是方程，不是坐标",
+          "body": "Auto Layout 在布局阶段解方程组。你声明的是关系：A.leading = B.leading + 16。系统算出 frame。好处是旋转、动态字体、多机型时规则仍成立。坏处是冲突/歧义时难查——所以要学会读日志。"
+        },
+        {
+          "title": "第2章 启用姿势与三件套",
+          "body": "1) addSubview 2) translatesAutoresizingMaskIntoConstraints=NO 3) Anchor + activateConstraints。漏掉第2步，系统会再生成一套自动约束，和你的约束打架。实验：故意漏掉，看控制台红色约束错误，再改回来。"
+        },
+        {
+          "title": "第3章 锚点地图",
+          "body": "常用：leading/trailing/top/bottom/centerX/centerY/width/height。与屏幕交互优先 safeAreaLayoutGuide。RTL 语言下 leading 比 left 更正确。firstBaseline 适合文字对齐。"
+        },
+        {
+          "title": "第4章 固有尺寸与内容优先级",
+          "body": "UILabel/UIButton 有固有内容尺寸。空间多时看 Content Hugging（谁不爱变大）；空间少时看 Compression Resistance（谁不爱被挤扁）。标题通常抗压缩更高，避免被挤成一行「…」。"
+        },
+        {
+          "title": "第5章 优先级与冲突拆解",
+          "body": "优先级 1~1000。Required=1000。两难时把次要约束降到 750。读日志：哪个视图、哪条方程、谁被打破。流程：复现→读日志→降级/删除冗余→再跑。"
+        },
+        {
+          "title": "第6章 UIStackView 减负",
+          "body": "线性排优先用 StackView：axis/spacing/alignment/distribution。外边距用 layoutMargins + isLayoutMarginsRelativeArrangement。能少写 10 条约束就少写。"
+        },
+        {
+          "title": "第7章 实验：资料卡片（必做）",
+          "body": "左 44×44 图标；右上标题（抗压缩高）；右下副标题（可多行）；卡片左右 16、圆角 12、内边距 12。验收：iPhone SE 与 Pro Max；横竖屏；动态字体最大时不重叠。"
+        },
+        {
+          "title": "第8章 键盘与滚动",
+          "body": "输入页包在 UIScrollView。键盘通知里改 contentInset.bottom。约束贴 safeArea。先掌握系统通知，再考虑第三方键盘库。"
+        },
+        {
+          "title": "第9章 掌握标准",
+          "body": "能手写四边+高度约束；能解释 translates；能处理一次冲突；完成卡片实验；测验≥80%。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：一次完整排错过程\n假设你同时写了 width=100 又 leading+trailing 拉满父视图，控制台会报 Unable to simultaneously satisfy constraints。步骤：1）找被夹击的视图地址；2）看冲突的两条方程；3）把 width 降到 priority 750 或删除；4）刷新界面验证。把这个流程练熟，比背 API 更重要。\n\n精讲附录：与动态字体\n标题用 UIFont preferredFontForTextStyle:UIFontTextStyleTitle2，副标题用 Title3。约束不要写死高度锁死文字，让标签垂直方向靠内容撑开，避免大字体裁切。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Auto Layout Guide",
+          "type": "官方文档",
+          "detail": "系统 Auto Layout 概念与调试",
+          "url": "https://developer.apple.com/documentation/uikit/uiview/positioning_content_within_layout_margins"
+        },
+        {
+          "title": "NSLayoutAnchor",
+          "type": "API 文档",
+          "detail": "纯代码约束首选 API",
+          "url": "https://developer.apple.com/documentation/uikit/nslayoutanchor"
+        },
+        {
+          "title": "WWDC：Auto Layout 相关 Session",
+          "type": "视频",
+          "detail": "搜索 Auto Layout / UI 刷新相关 WWDC",
+          "url": "https://developer.apple.com/videos/"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "完成第5章资料卡片并双机型验收"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "能解释为何需要 translatesAutoresizingMaskIntoConstraints = NO",
+        "能用 Anchor 写出四边约束",
+        "理解安全区用途",
+        "能处理简单冲突",
+        "完成卡片实验",
+        "测验≥80%"
+      ],
+      "glossary": [
+        {
+          "term": "固有内容尺寸",
+          "definition": "控件根据内容给出的理想大小，如 UILabel"
+        },
+        {
+          "term": "约束优先级",
+          "definition": "1~1000，决定冲突时谁被打破"
+        },
+        {
+          "term": "安全区",
+          "definition": "避开刘海/横条的可布局区域"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "用 AutoLayout 前通常要？",
+          "options": [
+            "clipsToBounds=YES",
+            "translatesAutoresizingMaskIntoConstraints=NO",
+            "opaque=NO",
+            "tag=1"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "更推荐的水平锚点？",
+          "options": [
+            "left/right",
+            "leading/trailing",
+            "centerY",
+            "firstBaseline 唯一"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "抗压缩优先级高意味着？",
+          "options": [
+            "更易被挤扁",
+            "更不易被挤扁",
+            "一定会换行",
+            "禁用约束"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "刘海设备顶部约束应优先？",
+          "options": [
+            "superview.top",
+            "safeAreaLayoutGuide.top",
+            "layoutMargins 忽略安全区",
+            "固定 y=0"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "冲突时优先？",
+          "options": [
+            "删除所有约束重来且不看日志",
+            "读日志并用优先级拆解",
+            "改用 frame 混用不管",
+            "重启 Mac"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "tableview",
+      "title": "UITableView 复用机制",
+      "desc": "从零理解复用池、配置幂等、高度与流畅滑动，完成可上线级列表基础",
+      "time": "75分钟",
+      "minutes": 75,
+      "tag": "核心",
+      "category": "uikit",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解UITableView 复用机制的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "学会可复用、可维护、滑动流畅的列表，而不是「能显示几行」。"
+        },
+        {
+          "title": "第1章 复用池原理",
+          "body": "屏幕外 Cell 进池，滑入再配置。创建 Cell 昂贵，配置必须便宜且幂等：同一数据配置多次结果一致，无旧图旧状态残留。"
+        },
+        {
+          "title": "第2章 注册与出队",
+          "body": "viewDidLoad：registerClass:forCellReuseIdentifier:。cellForRow：dequeue…forIndexPath:。Identifier 拼写不一致会运行时崩溃或拿错类型。"
+        },
+        {
+          "title": "第3章 prepareForReuse 清单",
+          "body": "清空 image、text、accessory、高亮；取消/作废异步回调（generation token 或 indexPath 校验）。这是错图 bug 的第一防线。"
+        },
+        {
+          "title": "第4章 数据源职责",
+          "body": "numberOfRows / cellForRow 保持瘦：只取模型赋值。排序过滤放 ViewModel/数据层。didSelect 做跳转，不在这里写网络。"
+        },
+        {
+          "title": "第5章 高度三种策略",
+          "body": "固定 rowHeight 最稳。自动高度：垂直约束完整 + estimatedRowHeight。缓存高度：对复杂 Cell 用字典缓存，避免反复 systemLayoutSizeFitting。"
+        },
+        {
+          "title": "第6章 异步图片标准流程",
+          "body": "占位图→后台下载/解码→回主线程→校验 indexPath 或 token→赋值。失败显示占位。禁止在 cellForRow 同步磁盘读大图。"
+        },
+        {
+          "title": "第7章 性能红线",
+          "body": "cellForRow 禁止：网络、JSON 解析、正则大计算、大量 NSLog。滑动时开 Time Profiler 看主线程。"
+        },
+        {
+          "title": "第8章 实验",
+          "body": "做 50+ 行课程列表：标题/副标题/标签/完成勾选。快速滑动无撕裂错图；旋转后布局正常。"
+        },
+        {
+          "title": "第9章 进阶方向",
+          "body": "UITableViewDiffableDataSource、prefetch、骨架屏。本课过关后再学。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：错图 bug 复现与修复\n快速滑动时，Cell A 开始下载图片；滑走后复用成 Cell B；图片返回却赋给了 B。修复：下载前记录 indexPath 或递增 token；回调时比对，不一致则丢弃。再配合 prepareForReuse 清空 imageView。\n\n精讲附录：reload 策略\n局部刷新用 reloadRowsAtIndexPaths:withRowAnimation:；数据结构大变再用 reloadData。频繁全量 reload 会闪烁与掉帧。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "UITableView 文档",
+          "type": "官方文档",
+          "detail": "数据源与复用",
+          "url": "https://developer.apple.com/documentation/uikit/uitableview"
+        },
+        {
+          "title": "UITableViewCell",
+          "type": "API",
+          "detail": "生命周期与 reuse",
+          "url": "https://developer.apple.com/documentation/uikit/uitableviewcell"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "完成第7章列表并滑动验收"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "解释复用池",
+        "正确 dequeue",
+        "实现 prepareForReuse",
+        "列表滑动无明显卡顿",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "复用标识符",
+          "definition": "同一类 Cell 的池子名字"
+        },
+        {
+          "term": "幂等配置",
+          "definition": "多次配置同一数据结果一致且无残留"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "性能关键机制？",
+          "options": [
+            "每次新建Cell",
+            "Cell复用",
+            "关闭复用",
+            "主线程同步下载"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "复用后应？",
+          "options": [
+            "保留旧图片",
+            "prepareForReuse 重置",
+            "禁止刷新",
+            "只用 tag"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "自动高度需要？",
+          "options": [
+            "无约束",
+            "完整垂直约束链",
+            "随便估高即可永不测",
+            "禁止 estimated"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "异步图回调风险？",
+          "options": [
+            "无风险",
+            "Cell 已复用导致错图",
+            "必定崩溃无法解",
+            "只能同步"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "cellForRow 里应避免？",
+          "options": [
+            "赋文案",
+            "重计算/网络",
+            "设 accessory",
+            "return cell"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "title": "网络请求与数据解析",
+      "desc": "从零搭建 NSURLSession 请求、错误分类、JSON 解析与线程切换闭环",
+      "time": "80分钟",
+      "minutes": 80,
+      "tag": "进阶",
+      "category": "network",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解网络请求与数据解析的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "独立完成 GET/POST→错误分类→JSON→主线程 UI→取消，形成可上线的最小网络层意识。"
+        },
+        {
+          "title": "第1章 HTTP 速通",
+          "body": "URL、Method、Header、Body、Status。2xx 成功；4xx 客户端问题；5xx 服务端问题。超时与无网是传输层错误（NSError）。"
+        },
+        {
+          "title": "第2章 NSURLSession 结构",
+          "body": "Configuration 决定超时/蜂窝；Session 管理任务；Task 可 resume/cancel。共享 session 入门够用；生产可自定义。"
+        },
+        {
+          "title": "第3章 GET 完整模板",
+          "body": "URL 校验→dataTask→resume→检查 error→转 HTTPURLResponse→statusCode→data 非空→JSON 解析→主线程刷新。每一步失败都要有分支。"
+        },
+        {
+          "title": "第4章 POST JSON",
+          "body": "NSMutableURLRequest：HTTPMethod=POST；Content-Type=application/json；httpBody=serialized dict。登录/提交用这个模型。"
+        },
+        {
+          "title": "第5章 鉴权",
+          "body": "Authorization Bearer。Token 来自 Keychain。401/403 触发重新登录，不要死循环刷新。"
+        },
+        {
+          "title": "第6章 线程与生命周期",
+          "body": "completion 常在后台队列。UI 必须主队列。VC 消失 cancel task；block 用 weakSelf。"
+        },
+        {
+          "title": "第7章 安全与日志",
+          "body": "ATS/HTTPS；禁止明文 Token 日志；重试要幂等。"
+        },
+        {
+          "title": "第8章 实验",
+          "body": "请求公开 JSON，显示 2 个字段；退出页取消；断网给出提示。"
+        },
+        {
+          "title": "第9章 过关标准",
+          "body": "能画出请求时序；能说出 5 类失败；完成实验与测验。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：错误文案怎么写给用户\n无网：「网络不可用，请检查连接」。超时：「请求超时，请稍后重试」。4xx：「请求无效」。5xx：「服务暂时不可用」。开发日志保留底层 error.localizedDescription，用户弹窗用可读文案。\n\n精讲附录：取消的正确姿势\n在 deinit/viewDidDisappear 调用 [task cancel]。completion 里如果 error.code == NSURLErrorCancelled，不要弹失败 Toast。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "NSURLSession",
+          "type": "官方文档",
+          "detail": "会话与任务",
+          "url": "https://developer.apple.com/documentation/foundation/nsurlsession"
+        },
+        {
+          "title": "App Transport Security",
+          "type": "文档",
+          "detail": "HTTPS 默认策略",
+          "url": "https://developer.apple.com/documentation/bundleresources/information_property_list/app_transport_security_keys"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "完成第7章请求展示"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "发出并 resume 请求",
+        "区分错误类型",
+        "主线程更新UI",
+        "页面退出取消任务",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "幂等",
+          "definition": "同一请求多次执行效果相同，重试更安全"
+        },
+        {
+          "term": "ATS",
+          "definition": "系统默认要求安全传输"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "推荐网络API？",
+          "options": [
+            "NSURLConnection",
+            "NSURLSession",
+            "UIWebView",
+            "CFSocket随便用"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "更新UI应在？",
+          "options": [
+            "任意线程",
+            "主线程",
+            "必须全局队列",
+            "信号量线程"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "task 创建后要？",
+          "options": [
+            "什么都不做",
+            "resume",
+            "立刻 cancel",
+            "同步 wait"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "ATS默认？",
+          "options": [
+            "HTTP",
+            "FTP",
+            "HTTPS",
+            "随便"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "页面退出未完成请求应？",
+          "options": [
+            "放任",
+            "cancel",
+            "强制同步",
+            "改全局单例强持有VC"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "coredata",
+      "title": "CoreData 数据持久化",
+      "desc": "从零理解 Context、CRUD、线程规则与轻量迁移，完成笔记实体实验",
+      "time": "90分钟",
+      "minutes": 90,
+      "tag": "高阶",
+      "category": "storage",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解CoreData 数据持久化的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "搭一条 PersistentContainer 栈，完成 Note CRUD，并守住线程铁律。"
+        },
+        {
+          "title": "第1章 对象图谱",
+          "body": "NSManagedObjectModel 描述实体；NSPersistentStoreCoordinator/Container 管存储；NSManagedObjectContext 管对象图；NSManagedObject 是行记录。"
+        },
+        {
+          "title": "第2章 建模步骤",
+          "body": "xcdatamodeld 建 Entity Note：title String、body String、updatedAt Date。生成 NSManagedObject 子类或用手动属性访问。"
+        },
+        {
+          "title": "第3章 CRUD 细节",
+          "body": "insertNewObject→设属性→save。FetchRequest+predicate+sort。deleteObject→save。每次 save 检查 NSError，失败要提示用户。"
+        },
+        {
+          "title": "第4章 线程铁律",
+          "body": "Context 有线程亲和。跨线程传对象用 objectID，另一边 objectWithID。用 performBlock 包访问。主线程别跑百万导入。"
+        },
+        {
+          "title": "第5章 轻量迁移",
+          "body": "简单加字段可轻量迁移；复杂变更要映射模型。版本思维：模型版本随 App 版本前进。"
+        },
+        {
+          "title": "第6章 关系入门",
+          "body": "To-many 删除规则 Cascade/Nullify。先无关系跑通，再加关系，降低复杂度。"
+        },
+        {
+          "title": "第7章 实验",
+          "body": "Note 列表+新增+删除；杀进程数据仍在；刻意在后台队列 fetch 并安全回调主线程。"
+        },
+        {
+          "title": "第8章 与 SQLite/Defaults 选型",
+          "body": "复杂关系/撤销→Core Data；简单缓存→SQLite；开关→Defaults。"
+        },
+        {
+          "title": "第9章 过关",
+          "body": "独立完成 CRUD；能解释 objectID；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：save 失败常见原因\n磁盘满、校验失败、合并冲突。生产代码应：保存失败时回滚或提示；重要操作不要静默失败。调试期把 error 打完整。\n\n精讲附录：主线程卡顿自查\nInstruments 看到 Main Thread 卡在 executeFetchRequest：说明谓词太重或数据量太大。改为后台 fetch，再把 objectID 传回主线程 fault in。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Core Data Programming Guide",
+          "type": "官方",
+          "detail": "体系化阅读",
+          "url": "https://developer.apple.com/documentation/coredata"
+        },
+        {
+          "title": "NSPersistentContainer",
+          "type": "API",
+          "detail": "栈搭建",
+          "url": "https://developer.apple.com/documentation/coredata/nspersistentcontainer"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "Note CRUD"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "完成建模与CRUD",
+        "理解线程规则",
+        "save 失败可感知",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "NSManagedObjectID",
+          "definition": "跨上下文引用对象的安全身份证"
+        },
+        {
+          "term": "轻量迁移",
+          "definition": "简单模型变更的自动迁移"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "跨线程传ManagedObject？",
+          "options": [
+            "推荐",
+            "应传objectID",
+            "必须copy",
+            "全局变量"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "查询API？",
+          "options": [
+            "NSFetchRequest",
+            "NSURLRequest",
+            "UIRequest",
+            "CARequest"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "保存失败应？",
+          "options": [
+            "忽略",
+            "处理error并反馈",
+            "自动删库",
+            "重启即可"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "主线程适合？",
+          "options": [
+            "百万行导入",
+            "轻量读取与UI",
+            "无限同步IO",
+            "强制barrier网络"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Token更该放？",
+          "options": [
+            "CoreData随便",
+            "Keychain",
+            "Info.plist",
+            "截图"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "gcd",
+      "title": "多线程与 GCD",
+      "desc": "从零掌握队列、async/sync、死锁规避与回主线程，完成并行聚合实验",
+      "time": "70分钟",
+      "minutes": 70,
+      "tag": "核心",
+      "category": "concurrency",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解多线程与 GCD的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "建立「UI 主线程、耗时离主线程、共享数据有保护」的肌肉记忆，并避免死锁。"
+        },
+        {
+          "title": "第1章 帧预算",
+          "body": "约 16ms/帧。主线程做布局、触摸、绘制。网络解析、加解密、大图解码离开主线程。"
+        },
+        {
+          "title": "第2章 队列",
+          "body": "主队列串行绑 UI。自定义串行保序保临界区。全局并发提吞吐但不保序。QoS 影响调度。"
+        },
+        {
+          "title": "第3章 async/sync",
+          "body": "async 投递即返回。sync 等待完成。绝对禁止：在主队列执行时再 sync 主队列——死锁。"
+        },
+        {
+          "title": "第4章 标准回跳模板",
+          "body": "global async 做事 → main async 更新 UI。把模板抄到笔记里。"
+        },
+        {
+          "title": "第5章 group",
+          "body": "enter/leave 或 notify 聚合多个异步。全部结束后再跳页/关 loading。"
+        },
+        {
+          "title": "第6章 共享资源",
+          "body": "专用串行队列保护可变数组；或障碍写。不要无保护多线程读写。"
+        },
+        {
+          "title": "第7章 实验",
+          "body": "三任务并行（sleep 模拟），全部结束主线程 Alert；再故意写一个死锁示例并删除。"
+        },
+        {
+          "title": "第8章 过关",
+          "body": "能画队列图；能解释死锁；完成实验。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：死锁最小复现\ndispatch_sync(dispatch_get_main_queue(), ^{}); 若当前已在主队列，会永久等待。面试常考。记住：主线程里用 async 回主线程，不要 sync。\n\n精讲附录：串行队列保护示例\n自定义 com.app.cache 串行队列，所有对 NSMutableDictionary 的读写都 async/sync 到该队列，避免数据竞争崩溃。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Concurrency Programming Guide",
+          "type": "官方",
+          "detail": "GCD 概念",
+          "url": "https://developer.apple.com/documentation/dispatch"
+        },
+        {
+          "title": "WWDC 性能与并发",
+          "type": "视频",
+          "detail": "https://developer.apple.com/videos/",
+          "url": "https://developer.apple.com/videos/"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "三任务聚合"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "分清队列",
+        "避免主队列自sync",
+        "会回主线程",
+        "完成实验",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "死锁",
+          "definition": "互相等待导致永久卡死"
+        },
+        {
+          "term": "QoS",
+          "definition": "任务重要性等级，影响调度"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "主队列sync自己？",
+          "options": [
+            "更快",
+            "可能死锁",
+            "自动转后台",
+            "编译禁止"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "更新UI用？",
+          "options": [
+            "dispatch_get_main_queue",
+            "全局sync自己",
+            "再detach一次",
+            "不用"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "保序更适合？",
+          "options": [
+            "并发队列",
+            "串行队列",
+            "sleep",
+            "NSTimer"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "耗时任务放？",
+          "options": [
+            "主线程",
+            "后台队列",
+            "drawRect里同步网络",
+            "layoutSubviews死循环"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "group作用？",
+          "options": [
+            "画UI",
+            "聚合多个异步完成",
+            "替代ARC",
+            "禁用网络"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "arc",
+      "title": "内存管理与 ARC",
+      "desc": "从零理解强弱引用、循环引用、weak-strong 与排查工具",
+      "time": "65分钟",
+      "minutes": 65,
+      "tag": "核心",
+      "category": "syntax",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解内存管理与 ARC的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "看懂所有权，能拆循环引用，会用 Memory Graph。"
+        },
+        {
+          "title": "第1章 引用计数直觉",
+          "body": "strong 延长生命；weak 不延长且对象释放后变 nil；环则泄漏。"
+        },
+        {
+          "title": "第2章 修饰符表",
+          "body": "strong 默认对象；weak 给 delegate；copy 给 NSString/block；assign 给标量。对象上用 assign 易野指针。"
+        },
+        {
+          "title": "第3章 环的故事",
+          "body": "self.strongBlock → block 强捕获 self。Timer target=self。互相 strong 的父子。"
+        },
+        {
+          "title": "第4章 weak-strong dance",
+          "body": "__weak typeof(self) weakSelf=self; block 内 __strong typeof(weakSelf) strongSelf=weakSelf; if(!strongSelf)return;"
+        },
+        {
+          "title": "第5章 成对拆除",
+          "body": "通知 removeObserver；KVO unobserve；Timer invalidate 并置 nil。"
+        },
+        {
+          "title": "第6章 工具",
+          "body": "Debug Memory Graph 找路径；Leaks 辅助。实验：制造环→Graph 看见→改 weak→验证释放。"
+        },
+        {
+          "title": "第7章 过关",
+          "body": "口述三例环；默写 weak-strong；完成实验。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：Timer 泄漏复现\nscheduledTimerWithTimeInterval:target:self… 会强持有 target。VC 关不掉。改用 block API（iOS 10+）并 weakSelf，或 invalidate 置 nil。\n\n精讲附录：Memory Graph 怎么看\nDebug → Memory Graph，搜你的类名，看是否还有实例；点进引用路径，找谁 strong 着它。改完再验证实例数为 0。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Advanced Memory Management",
+          "type": "官方",
+          "detail": "所有权政策",
+          "url": "https://developer.apple.com/documentation/uikit"
+        },
+        {
+          "title": "Instruments",
+          "type": "工具",
+          "detail": "Leaks / Graph"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "制造并打破 block 环"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "识别环",
+        "写出weak-strong",
+        "会拆Timer/通知",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "循环引用",
+          "definition": "互相强持有导致无法释放"
+        },
+        {
+          "term": "weak-strong dance",
+          "definition": "先弱捕获再强回，避免环且防中途释放"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "delegate常用？",
+          "options": [
+            "strong",
+            "copy",
+            "weak",
+            "只能assign"
+          ],
+          "answer": 2
+        },
+        {
+          "q": "block环常见因？",
+          "options": [
+            "weak self",
+            "self持有block且block强持self",
+            "NSInteger",
+            "UIColor"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Memory Graph用途？",
+          "options": [
+            "画UI",
+            "看引用路径",
+            "替代Git",
+            "测网速"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Timer强引用target？",
+          "options": [
+            "没事",
+            "可能导致VC不释放",
+            "必崩溃立刻",
+            "自动weak"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "大图内存？",
+          "options": [
+            "随便原图",
+            "注意解码尺寸",
+            "越大越好",
+            "放Info.plist"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "title": "App 上架全流程",
+      "desc": "从零走通证书、Archive、TestFlight 到审核材料清单",
+      "time": "55分钟",
+      "minutes": 55,
+      "tag": "实战",
+      "category": "security",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解App 上架全流程的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "能独立走通「签名→Archive→TestFlight→审核材料」检查表。"
+        },
+        {
+          "title": "第1章 身份三件套",
+          "body": "Apple Developer 账号、Team、Bundle ID。三者不一致必失败。"
+        },
+        {
+          "title": "第2章 证书与描述文件",
+          "body": "Development 调试；Distribution 分发。Automatic Signing 入门可用，但要理解它在干什么。"
+        },
+        {
+          "title": "第3章 Archive",
+          "body": "Generic iOS Device/Any iOS Device→Product→Archive→Organizer→Distribute App。Version 与 Build 必须递增。"
+        },
+        {
+          "title": "第4章 TestFlight",
+          "body": "上传处理完成后分配内测组；外部测试可能需合规审核。准备测试说明。"
+        },
+        {
+          "title": "第5章 审核高频拒因",
+          "body": "隐私用途文案敷衍；登录墙无演示账号；崩溃；过度 ATS 例外；功能与描述不符。"
+        },
+        {
+          "title": "第6章 材料清单",
+          "body": "截图、隐私政策、加密问卷、登录账号、联系邮箱。"
+        },
+        {
+          "title": "第7章 实验",
+          "body": "为本 Demo 填写一页「上架检查表」并自评缺项。"
+        },
+        {
+          "title": "第8章 过关",
+          "body": "能讲解证书作用；能列出 5 条拒因；检查表完成。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：Build 号纪律\n同一 Version 可多次上传，但 Build 必须严格递增。搞混会导致上传被拒。建议 CI 用时间戳或流水线号生成 Build。\n\n精讲附录：演示账号\n审核员没账号就无法进主流程。在审核备注写清账号密码与路径；验证码登录要提供特殊通道。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "App Store Connect Help",
+          "type": "官方",
+          "detail": "发布流程",
+          "url": "https://developer.apple.com/app-store-connect/"
+        },
+        {
+          "title": "Human Interface & Review Guidelines",
+          "type": "规范",
+          "detail": "审核准则",
+          "url": "https://developer.apple.com/app-store/review/guidelines/"
+        },
+        {
+          "title": "本课检查表",
+          "type": "练习",
+          "detail": "完成第6章"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "能解释证书作用",
+        "会Archive思路",
+        "知道TestFlight",
+        "能列出驳回点",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "Provisioning Profile",
+          "definition": "把证书、App ID、设备粘在一起的配置"
+        },
+        {
+          "term": "Build号",
+          "definition": "每次上传必须递增的构建号"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "常用内测？",
+          "options": [
+            "TestFlight",
+            "短信ipa",
+            "任意AirDrop",
+            "Safari装"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "权限说明写在？",
+          "options": [
+            "注释",
+            "Info.plist Usage Description",
+            "Assets",
+            "Storyboard标题"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "密码放？",
+          "options": [
+            "UserDefaults",
+            "Keychain",
+            "Info.plist",
+            "相册"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "上传前Version/Build？",
+          "options": [
+            "可重复",
+            "需递增",
+            "随便",
+            "只能字母"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "审核登录墙？",
+          "options": [
+            "不用管",
+            "提供演示账号",
+            "故意崩溃",
+            "隐藏入口"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "uikit-nav",
+      "title": "导航与页面流转",
+      "desc": "从零掌握 Push/Present、TabBar、返回栈与页面生命周期配合",
+      "time": "55分钟",
+      "minutes": 55,
+      "tag": "入门",
+      "category": "uikit",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解导航与页面流转的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "清楚何时 Push、何时 Present，并能搭出可返回的完整路径。"
+        },
+        {
+          "title": "第1章 容器分工",
+          "body": "Tab=平行分区；Nav=层级深入；Modal=临时任务。混用可以，但要有规则。"
+        },
+        {
+          "title": "第2章 Push 细节",
+          "body": "push/pop；返回手势；hidesBottomBarWhenPushed=YES 给详情。无 navigationController 时 push 无效。"
+        },
+        {
+          "title": "第3章 Present 细节",
+          "body": "pageSheet/formSheet/fullScreen；谁 present 谁负责 dismiss；导航包一层再 present 很常见。"
+        },
+        {
+          "title": "第4章 生命周期",
+          "body": "viewDidLoad 一次初始化；appear 适合刷新；消失停动画/取消网络。"
+        },
+        {
+          "title": "第5章 深链与栈",
+          "body": "通知进详情要确保底下有列表可返回，或提供关闭按钮。"
+        },
+        {
+          "title": "第6章 实验",
+          "body": "列表 Push 详情，详情 Present 说明，说明 dismiss，详情 pop 回列表。"
+        },
+        {
+          "title": "第7章 过关",
+          "body": "画出本 App 导航图；完成实验；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：重复 push\n用户连点 Cell 可能 push 两次。防护：didSelect 里临时禁用、或判断 top VC 是否已是目标类。\n\n精讲附录：模态与导航栏\npresent 的页面若需要标题与关闭按钮，先包 UINavigationController，再 present 这个 nav。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "UINavigationController",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/uikit/uinavigationcontroller",
+          "url": "https://developer.apple.com/documentation/uikit/uinavigationcontroller"
+        },
+        {
+          "title": "UIViewController",
+          "type": "文档",
+          "detail": "呈现与生命周期",
+          "url": "https://developer.apple.com/documentation/uikit/uiviewcontroller"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "第5章路径"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "分清Push/Present",
+        "正确隐藏TabBar",
+        "成对dismiss",
+        "完成实验",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "导航栈",
+          "definition": "Nav 中 VC 的后进先出序列"
+        },
+        {
+          "term": "模态呈现",
+          "definition": "临时覆盖任务流的展示方式"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "隐藏TabBar？",
+          "options": [
+            "modalPresentationStyle",
+            "hidesBottomBarWhenPushed",
+            "opaque",
+            "tag"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "临时编辑页更适合？",
+          "options": [
+            "无限Push",
+            "Present",
+            "新进程",
+            "改Window根且不还原"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "无nav时push？",
+          "options": [
+            "正常",
+            "通常无效/崩溃风险",
+            "自动创建nav",
+            "变Present"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Present后必须？",
+          "options": [
+            "忘记不管",
+            "适时dismiss",
+            "kill app",
+            "popToRoot代替一切"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "详情记录学习？",
+          "options": [
+            "viewDidLoad合适设lastLesson",
+            "在dealloc网络请求",
+            "主线程sync自己",
+            "禁止"
+          ],
+          "answer": 0
+        }
+      ]
+    },
+    {
+      "id": "json-model",
+      "title": "JSON 与模型映射",
+      "desc": "从零建立防御式解析：类型校验、默认值、列表与嵌套",
+      "time": "70分钟",
+      "minutes": 70,
+      "tag": "进阶",
+      "category": "network",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解JSON 与模型映射的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "脏数据不崩，缺字段有默认，列表可部分容错。"
+        },
+        {
+          "title": "第1章 JSON 类型",
+          "body": "object→NSDictionary；array→NSArray；string/number/bool；null→NSNull。NSNull 不是 nil。"
+        },
+        {
+          "title": "第2章 防御式读取模板",
+          "body": "id v=dict[@\"k\"]; if([v isKindOfClass:NSString.class]) … else 默认值。数字用 respondsToSelector:@selector(integerValue)。"
+        },
+        {
+          "title": "第3章 模型初始化",
+          "body": "initWithDictionary: 集中转换。禁止把半生不熟 dict 传遍全 App。"
+        },
+        {
+          "title": "第4章 列表策略",
+          "body": "单条失败：跳过并打日志，或整页失败。产品决定，代码要显式。"
+        },
+        {
+          "title": "第5章 兼容与版本",
+          "body": "新字段可选解析；旧字段保留一段时间。"
+        },
+        {
+          "title": "第6章 安全",
+          "body": "日志脱敏 Token/手机号；崩溃上报勿带 PII。"
+        },
+        {
+          "title": "第7章 实验",
+          "body": "准备 6 份脏 JSON（缺字段/错类型/null/多字段）全部不崩。"
+        },
+        {
+          "title": "第8章 过关",
+          "body": "默写解析模板；实验通过；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：NSNull 崩溃现场\ndict[@\"name\"] 可能是 NSNull。当 NSString 发 length 会崩。模板必须 isKindOfClass 判断。\n\n精讲附录：默认值策略\n展示型字段缺省给 @\"\" 或 @\"未知\"；金额类缺省要谨慎，可能应失败而非 0。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "NSJSONSerialization",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/foundation/nsjsonserialization",
+          "url": "https://developer.apple.com/documentation/foundation/nsjsonserialization"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "脏数据解析"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "类型校验",
+        "默认值策略",
+        "列表解析",
+        "脱敏",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "NSNull",
+          "definition": "JSON null 的对象占位，不能当 NSString 用"
+        },
+        {
+          "term": "防御式解析",
+          "definition": "先验证再转换，失败有策略"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "JSON null常成？",
+          "options": [
+            "nil指针必崩无法解",
+            "NSNull",
+            "空字符串必定",
+            "0"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "缺字段应？",
+          "options": [
+            "强制崩溃",
+            "默认值或明确失败",
+            "忽略类型",
+            "改服务器立即"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "解析后UI？",
+          "options": [
+            "后台线程直接改",
+            "主线程",
+            "随便",
+            "只用print"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Token日志？",
+          "options": [
+            "完整打印",
+            "脱敏",
+            "写入相册",
+            "放标题栏"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Int变String？",
+          "options": [
+            "强制桥接不管",
+            "校验类型并转换/失败",
+            "无视",
+            "重启"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "sqlite",
+      "title": "SQLite 轻量存储",
+      "desc": "从零理解何时用 SQLite、事务索引、线程与缓存表实验",
+      "time": "65分钟",
+      "minutes": 65,
+      "tag": "进阶",
+      "category": "storage",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解SQLite 轻量存储的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "会选型，会建表事务索引，会在串行队列访问，完成缓存表。"
+        },
+        {
+          "title": "第1章 选型",
+          "body": "开关→Defaults；简单缓存/检索→SQLite；复杂对象图→Core Data。"
+        },
+        {
+          "title": "第2章 打开与路径",
+          "body": "Documents/Library 下建库文件。注意备份与清除策略。"
+        },
+        {
+          "title": "第3章 Schema",
+          "body": "CREATE TABLE；主键；NOT NULL；准备迁移的 user_version。"
+        },
+        {
+          "title": "第4章 事务",
+          "body": "循环插入必须事务，否则极慢。失败 ROLLBACK。"
+        },
+        {
+          "title": "第5章 索引",
+          "body": "为高频 WHERE/ORDER BY 列建 INDEX。过多索引拖慢写入。"
+        },
+        {
+          "title": "第6章 线程",
+          "body": "所有 SQL 进同一串行队列。禁止主线程重查询。"
+        },
+        {
+          "title": "第7章 参数化",
+          "body": "用 ? 绑定，禁止拼接用户输入。"
+        },
+        {
+          "title": "第8章 实验",
+          "body": "lesson_cache 表缓存课程标题；冷启动先读缓存。"
+        },
+        {
+          "title": "第9章 过关",
+          "body": "完成缓存表；能解释事务/索引；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：无事务插入 1000 行\n可能耗时数秒。包在 BEGIN…COMMIT 后通常瞬间完成。移动端务必养成事务习惯。\n\n精讲附录：主线程查询的危害\n滑动列表同步查库会掉帧。改为：串行队列查询→主线程刷新 UI。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "SQLite 官方文档",
+          "type": "文档",
+          "detail": "SQL 语法",
+          "url": "https://www.sqlite.org/docs.html"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "缓存表"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "会选型",
+        "会用事务",
+        "知道索引",
+        "不做主线程重查询",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "事务",
+          "definition": "一组原子写入，要么全成要么全撤"
+        },
+        {
+          "term": "索引",
+          "definition": "加速查询的数据结构，代价是写入与空间"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "简单开关配置？",
+          "options": [
+            "SQLite必须",
+            "NSUserDefaults",
+            "Metal",
+            "ReplayKit"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "循环insert应？",
+          "options": [
+            "无事务",
+            "事务批写",
+            "主线程同步百万行",
+            "禁止索引"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "主线程大查询？",
+          "options": [
+            "推荐",
+            "应避免",
+            "越卡越正确",
+            "只能这样"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "schema升级？",
+          "options": [
+            "不管",
+            "版本迁移脚本",
+            "删用户数据默认",
+            "重装系统"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Token？",
+          "options": [
+            "SQLite明文随便",
+            "Keychain",
+            "Info.plist",
+            "NSLog"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "operation",
+      "title": "NSOperation 任务编排",
+      "desc": "从零掌握依赖、取消、最大并发，完成下载链路实验",
+      "time": "70分钟",
+      "minutes": 70,
+      "tag": "高阶",
+      "category": "concurrency",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解NSOperation 任务编排的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "用依赖与取消编排任务，完成可中断链路。"
+        },
+        {
+          "title": "第1章 何时用",
+          "body": "需要依赖、取消、并发上限、任务状态时用 Operation；火忘小事用 GCD。"
+        },
+        {
+          "title": "第2章 Queue",
+          "body": "maxConcurrentOperationCount 限流。主队列别塞重活。"
+        },
+        {
+          "title": "第3章 Dependency",
+          "body": "[B addDependency:A] 表示 B 等 A。避免环依赖。"
+        },
+        {
+          "title": "第4章 取消",
+          "body": "cancel 是协作式：循环/回调里检查 isCancelled 并提前结束。"
+        },
+        {
+          "title": "第5章 自定义 Operation",
+          "body": "正确维护 isExecuting/isFinished KVO，否则队列认为没结束。"
+        },
+        {
+          "title": "第6章 与 URLSession",
+          "body": "包装 dataTask，结束时标记 finished；cancel 时 cancel task。"
+        },
+        {
+          "title": "第7章 实验",
+          "body": "下载→解码→缓存三步依赖；中途取消后续不执行。"
+        },
+        {
+          "title": "第8章 过关",
+          "body": "能画依赖图；完成实验；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：取消后仍写磁盘\ncancel 后若继续写缓存，会产生脏数据。每个阶段开头检查 isCancelled，立即 return 并标记 finished。\n\n精讲附录：依赖环\nA 依赖 B、B 依赖 A 会卡死。加依赖前画图，单测覆盖。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "NSOperation",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/foundation/nsoperation",
+          "url": "https://developer.apple.com/documentation/foundation/nsoperation"
+        },
+        {
+          "title": "NSOperationQueue",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/foundation/nsoperationqueue",
+          "url": "https://developer.apple.com/documentation/foundation/nsoperationqueue"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "依赖链路"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "会加依赖",
+        "会限流",
+        "取消后不再继续",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "依赖",
+          "definition": "某 Operation 需等待另一些完成"
+        },
+        {
+          "term": "取消",
+          "definition": "协作式停止，需代码自己检查标志"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "可取消依赖任务流更适合？",
+          "options": [
+            "只sleep",
+            "NSOperation",
+            "禁用队列",
+            "busy loop"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "cancel后？",
+          "options": [
+            "立刻魔法停止无需代码",
+            "需检查isCancelled",
+            "必定崩溃",
+            "自动重试无限"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "maxConcurrent作用？",
+          "options": [
+            "改字体",
+            "限制并发数",
+            "关ARC",
+            "禁网络"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "依赖方向？",
+          "options": [
+            "B addDependency A 表示B等A",
+            "随机",
+            "只能循环依赖",
+            "禁止"
+          ],
+          "answer": 0
+        },
+        {
+          "q": "状态KVO？",
+          "options": [
+            "无关",
+            "自定义Operation需正确维护",
+            "系统禁止",
+            "只主线程"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "keystore",
+      "title": "Keychain 与本地安全",
+      "desc": "从零把 Token 存进 Keychain，并理解访问控制与生物识别补充",
+      "time": "55分钟",
+      "minutes": 55,
+      "tag": "实战",
+      "category": "security",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解Keychain 与本地安全的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "Token 存取删全闭环，理解 Accessible。"
+        },
+        {
+          "title": "第1章 为什么不用 Defaults",
+          "body": "plist 可读；备份/越狱风险。密码/RefreshToken/私钥进 Keychain。"
+        },
+        {
+          "title": "第2章 查询键",
+          "body": "class=genericPassword；service=bundleId；account=userId。"
+        },
+        {
+          "title": "第3章 CRUD",
+          "body": "Add/Update/CopyMatching/Delete。先 Update 失败再 Add 是常见幂等写法。"
+        },
+        {
+          "title": "第4章 Accessible",
+          "body": "ThisDeviceOnly 等策略：锁屏后是否可读。按敏感度选择。"
+        },
+        {
+          "title": "第5章 生物识别",
+          "body": "LocalAuthentication 作二次确认，不替代 Keychain。"
+        },
+        {
+          "title": "第6章 失败策略",
+          "body": "读失败→清会话→登录页；不要假装有 Token。"
+        },
+        {
+          "title": "第7章 实验",
+          "body": "写入假 Token→杀进程仍在→登出删除。"
+        },
+        {
+          "title": "第8章 过关",
+          "body": "完成实验；能讲清 Defaults vs Keychain。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：Add 重复失败\n二次登录 Add 同 account 会失败。应 Update，或 Delete 后 Add。把这段写成工具方法。\n\n精讲附录：日志红线\nNSLog(@\"token=%@\", token) 禁止合入主干。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Keychain Services",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/security/keychain_services",
+          "url": "https://developer.apple.com/documentation/security/keychain_services"
+        },
+        {
+          "title": "LocalAuthentication",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/localauthentication",
+          "url": "https://developer.apple.com/documentation/localauthentication"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "Token 存取删"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "知道放哪",
+        "完成存取删",
+        "理解Accessible",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "Keychain",
+          "definition": "系统加密凭据库"
+        },
+        {
+          "term": "Accessible",
+          "definition": "控制何时可读凭据的策略"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Token更适合？",
+          "options": [
+            "UserDefaults",
+            "Keychain",
+            "Info.plist",
+            "相册"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "密码放Defaults？",
+          "options": [
+            "推荐",
+            "不推荐",
+            "必须",
+            "只加密文件名即可"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "登出应？",
+          "options": [
+            "留Token",
+            "删除Keychain项",
+            "写到标题",
+            "截图保存"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "生物识别是？",
+          "options": [
+            "替代Keychain",
+            "二次门槛补充",
+            "禁网络",
+            "替代HTTPS"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "失败策略？",
+          "options": [
+            "假装成功",
+            "重新登录/降级",
+            "崩给用户",
+            "死循环"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "runtime",
+      "title": "Runtime 与消息转发",
+      "desc": "从零理解消息发送路径与 Swizzling 风险边界，建立正确使用原则",
+      "time": "75分钟",
+      "minutes": 75,
+      "tag": "高阶",
+      "category": "syntax",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解Runtime 与消息转发的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "理解消息发送与 Swizzling 风险，建立「默认不用 Hook」原则。"
+        },
+        {
+          "title": "第1章 isa",
+          "body": "对象持有 isa 指向类；方法在类的方法列表。继承沿 super 查。"
+        },
+        {
+          "title": "第2章 objc_msgSend",
+          "body": "SEL→缓存→方法列表→动态解析→转发。这是 OC 动态性的核心。"
+        },
+        {
+          "title": "第3章 动态解析/转发",
+          "body": "resolveInstanceMethod、forwardingTarget、forwardInvocation。知道存在即可，业务少用。"
+        },
+        {
+          "title": "第4章 Swizzling 真相",
+          "body": "交换 IMP，影响所有实例。顺序、重复交换、忘调原实现都会造成诡异 bug。"
+        },
+        {
+          "title": "第5章 什么时候严禁",
+          "body": "无测试乱 Hook 系统生命周期；为了省事 Hook 三方库；不写注释与恢复方案。"
+        },
+        {
+          "title": "第6章 替代",
+          "body": "组合、委托、子类、通知、AOP 框架（仍要审慎）。"
+        },
+        {
+          "title": "第7章 作业",
+          "body": "写出 3 条「本项目严禁 Swizzle」的场景说明。"
+        },
+        {
+          "title": "第8章 过关",
+          "body": "能口述消息路径；作业完成；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：Hook viewDidLoad 的典型事故\n交换后忘记调原实现，系统初始化被跳过，各种奇葩 UI bug。线上难复现。\n\n精讲附录：团队规范建议\n默认禁止 Swizzle；若必须，需要：书面理由、单测、注释、可回滚开关。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Objective-C Runtime",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/objectivec/objective-c_runtime",
+          "url": "https://developer.apple.com/documentation/objectivec/objective-c_runtime"
+        },
+        {
+          "title": "本课作业",
+          "type": "练习",
+          "detail": "写出三条严禁Swizzle场景"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "能描述消息路径",
+        "知道Swizzle风险",
+        "能提出替代方案",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "SEL/IMP",
+          "definition": "方法名与函数指针实现"
+        },
+        {
+          "term": "Swizzling",
+          "definition": "交换方法实现，影响面全局"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "Swizzling？",
+          "options": [
+            "无副作用日常随便用",
+            "高风险需谨慎",
+            "替代所有架构",
+            "编译期强制"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "消息发送？",
+          "options": [
+            "仅宏",
+            "运行期查找实现",
+            "只能静态链接C",
+            "与对象无关"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "业务首选？",
+          "options": [
+            "先Hook系统",
+            "组合/委托等常规设计",
+            "必Swizzle viewDidLoad",
+            "改ISA随便"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "多次+load交换？",
+          "options": [
+            "永远安全",
+            "顺序/重复问题",
+            "自动去重无忧",
+            "禁读文档"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "忘记调原实现？",
+          "options": [
+            "没事",
+            "可能打断生命周期",
+            "更流畅",
+            "系统补齐"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "perf",
+      "title": "启动与滑动性能优化",
+      "desc": "从零建立测量→定位→验证的性能闭环，覆盖启动与列表",
+      "time": "80分钟",
+      "minutes": 80,
+      "tag": "实战",
+      "category": "uikit",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解启动与滑动性能优化的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "形成测量→假设→改一处→再测量的闭环。"
+        },
+        {
+          "title": "第1章 预算",
+          "body": "主线程帧预算；启动到首帧可交互。"
+        },
+        {
+          "title": "第2章 启动分层",
+          "body": "必做/可延迟。+load、同步 IO、巨型资源阻塞启动。"
+        },
+        {
+          "title": "第3章 Time Profiler",
+          "body": "录制滑动/启动；看 Heaviest Stack Trace；定位到函数。"
+        },
+        {
+          "title": "第4章 列表卡顿清单",
+          "body": "复用、高度、主线程解码、透明层、过多阴影、疯狂日志。"
+        },
+        {
+          "title": "第5章 渲染",
+          "body": "离屏渲染与过度绘制概念；圆角阴影有成本。"
+        },
+        {
+          "title": "第6章 实验",
+          "body": "首页滑动采样，记录 Top3 符号与下一步优化假设。"
+        },
+        {
+          "title": "第7章 过关",
+          "body": "交出采样笔记；能讲清闭环；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：启动优化顺序\n先去掉同步网络/同步磁盘，再谈链接器与二进制体积。顺序反了收益小。\n\n精讲附录：采样怎么写笔记\n时间、操作路径、Top3 符号、假设、改动、再采样对比。没有对比就没有结论。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "Improving Your App's Performance",
+          "type": "官方",
+          "detail": "性能指引",
+          "url": "https://developer.apple.com/documentation/xcode/improving_your_app_s_performance"
+        },
+        {
+          "title": "Instruments Help",
+          "type": "工具",
+          "detail": "Time Profiler"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "采样Top3"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "会用Profiler",
+        "能列启动优化项",
+        "能列列表卡顿因",
+        "完成采样",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "离屏渲染",
+          "definition": "先渲到离屏缓冲再合成，成本更高"
+        },
+        {
+          "term": "过度绘制",
+          "definition": "同一像素被多次绘制"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "优化第一步？",
+          "options": [
+            "盲目改",
+            "先测量",
+            "删全部动画",
+            "关复用"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "大图主线程解码？",
+          "options": [
+            "推荐",
+            "易卡顿应规避",
+            "只能这样",
+            "无影响"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "cellForRow重计算？",
+          "options": [
+            "可以",
+            "应避免",
+            "越多越好",
+            "替代数据源"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "圆角阴影？",
+          "options": [
+            "永远免费",
+            "可能增加成本需注意",
+            "必须离屏",
+            "禁UI"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "验证优化？",
+          "options": [
+            "凭感觉",
+            "再测量对比",
+            "只发版",
+            "关测试"
+          ],
+          "answer": 1
+        }
+      ]
+    },
+    {
+      "id": "ats",
+      "title": "ATS 与网络安全",
+      "desc": "从零理解 HTTPS 默认、例外最小化、证书策略与发布风险",
+      "time": "50分钟",
+      "minutes": 50,
+      "tag": "核心",
+      "category": "security",
+      "prerequisites": [
+        "完成《Objective-C 基础语法》或具备同等基础"
+      ],
+      "learningGoals": [
+        "理解ATS 与网络安全的核心概念与适用边界",
+        "能跟着讲义完成关键代码实验",
+        "能独立排查本课列出的常见坑",
+        "能使用本课学习资料继续深入",
+        "课后测验达标并完成掌握清单"
+      ],
+      "learningPath": [
+        "阅读「为什么学」与前置条件，确认目标",
+        "按章节顺序学习并手敲示例",
+        "完成章节中的小实验",
+        "阅读学习资料中的官方文档对应章节",
+        "过掌握清单与术语表，完成测验"
+      ],
+      "chapters": [
+        {
+          "title": "第0章 目标",
+          "body": "默认 HTTPS，例外可解释可过期，正式包无调试漏洞。"
+        },
+        {
+          "title": "第1章 ATS 行为",
+          "body": "不合规连接被系统拦截。目的是保护用户流量。"
+        },
+        {
+          "title": "第2章 例外成本",
+          "body": "审核质疑、中间人风险、习惯性明文。NSAllowsArbitraryLoads 是最后手段。"
+        },
+        {
+          "title": "第3章 最小化配置",
+          "body": "按域名例外；只开必要项；写明原因与到期。"
+        },
+        {
+          "title": "第4章 环境隔离",
+          "body": "Debug 可临时代理；Release 禁止打包调试例外。"
+        },
+        {
+          "title": "第5章 Pinning",
+          "body": "防中间人，但证书轮换要使 App 仍可用；准备紧急开关。"
+        },
+        {
+          "title": "第6章 审计实验",
+          "body": "检查 Info.plist；列出例外；写移除计划。"
+        },
+        {
+          "title": "第7章 过关",
+          "body": "审计完成；能解释 Pinning 利弊；测验达标。"
+        },
+        {
+          "title": "精讲附录（必读）",
+          "body": "精讲附录：ArbitraryLoads 的诱惑\n一键开启全站明文最省事，也最危险。应用域名级例外，并建票据到期删除。\n\n精讲附录：代理调试与生产\n开发装 Charles 证书不等于用户环境。Release 配置必须干净。"
+        }
+      ],
+      "materials": [
+        {
+          "title": "ATS Keys",
+          "type": "官方",
+          "detail": "https://developer.apple.com/documentation/bundleresources/information_property_list/app_transport_security_keys",
+          "url": "https://developer.apple.com/documentation/bundleresources/information_property_list/app_transport_security_keys"
+        },
+        {
+          "title": "本课实验",
+          "type": "练习",
+          "detail": "例外审计"
+        },
+        {
+          "title": "过关验收标准",
+          "type": "清单",
+          "detail": "完成本课实验 + 掌握清单自检 + 测验正确率≥80% 方可标记完成"
+        },
+        {
+          "title": "本章实验验收表",
+          "type": "练习",
+          "detail": "按学习路径逐步完成后，用掌握清单打勾；测验≥80% 再标记课程完成。建议把错题记在备忘录复盘。"
+        }
+      ],
+      "checklist": [
+        "理解默认HTTPS",
+        "会最小化例外",
+        "知Pinning利弊",
+        "完成审计",
+        "测验达标"
+      ],
+      "glossary": [
+        {
+          "term": "ATS",
+          "definition": "App Transport Security，系统传输安全策略"
+        },
+        {
+          "term": "Certificate Pinning",
+          "definition": "固定期望证书/公钥，防中间人但也增运维复杂度"
+        }
+      ],
+      "quiz": [
+        {
+          "q": "ATS默认？",
+          "options": [
+            "HTTP",
+            "HTTPS",
+            "FTP",
+            "随意"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "NSAllowsArbitraryLoads？",
+          "options": [
+            "推荐生产开启",
+            "应尽量避免",
+            "无风险",
+            "替代Keychain"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "例外应？",
+          "options": [
+            "全域永久",
+            "最小域名并可过期",
+            "越多越好",
+            "隐藏不声明"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "Pinning过死？",
+          "options": [
+            "无影响",
+            "换证可能导致大面积失败",
+            "自动永续",
+            "禁HTTPS"
+          ],
+          "answer": 1
+        },
+        {
+          "q": "明文HTTP？",
+          "options": [
+            "生产随便",
+            "优先升级HTTPS",
+            "比HTTPS更安全",
+            "只需注释"
+          ],
+          "answer": 1
+        }
+      ]
+    }
+  ]
+}
