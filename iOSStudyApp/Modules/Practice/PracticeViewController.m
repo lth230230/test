@@ -17,6 +17,8 @@
 @property (nonatomic, strong) UIButton *nextButton;
 @property (nonatomic, assign) NSInteger selectedIndex;
 @property (nonatomic, assign) BOOL answered;
+@property (nonatomic, strong) NSDate *studyAnchor;
+@property (nonatomic, strong) NSTimer *studyTimer;
 @end
 
 @implementation PracticeViewController
@@ -31,6 +33,61 @@
     self.selectedIndex = -1;
     [self setupUI];
     [self renderQuestion];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillResignActive)
+                                                 name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidBecomeActive)
+                                                 name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self beginStudyTracking];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self endStudyTracking];
+}
+
+- (void)dealloc {
+    [self.studyTimer invalidate];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)beginStudyTracking {
+    [self.studyTimer invalidate];
+    self.studyAnchor = [NSDate date];
+    __weak typeof(self) weakSelf = self;
+    self.studyTimer = [NSTimer scheduledTimerWithTimeInterval:15.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+        [weakSelf flushStudyDuration];
+    }];
+}
+
+- (void)endStudyTracking {
+    [self.studyTimer invalidate];
+    self.studyTimer = nil;
+    [self flushStudyDuration];
+    self.studyAnchor = nil;
+}
+
+- (void)flushStudyDuration {
+    if (!self.studyAnchor) return;
+    NSTimeInterval elapsed = [[NSDate date] timeIntervalSinceDate:self.studyAnchor];
+    self.studyAnchor = [NSDate date];
+    [[StudyDataStore shared] recordStudyDuration:elapsed forLessonId:self.lesson[@"id"]];
+}
+
+- (void)appWillResignActive {
+    if (self.view.window) {
+        [self endStudyTracking];
+    }
+}
+
+- (void)appDidBecomeActive {
+    if (self.view.window && !self.presentedViewController) {
+        [self beginStudyTracking];
+    }
 }
 
 - (void)setupUI {
@@ -198,13 +255,17 @@
 }
 
 - (void)showResult {
+    // Flush practice time before completion mark / leaving the page.
+    [self flushStudyDuration];
+    
     BOOL pass = self.score * 1.0 / MAX(self.questions.count, 1) >= 0.67;
     if (pass) {
         [[StudyDataStore shared] markLessonCompleted:self.lesson[@"id"]];
     }
     
-    NSString *message = [NSString stringWithFormat:@"答对 %ld / %ld 题\n%@",
-                         (long)self.score, (long)self.questions.count,
+    NSString *studied = [[StudyDataStore shared] todayStudyDurationText];
+    NSString *message = [NSString stringWithFormat:@"答对 %ld / %ld 题\n今日已学 %@\n%@",
+                         (long)self.score, (long)self.questions.count, studied,
                          pass ? @"已自动标记本课为完成，继续保持！" : @"建议回顾课文后再试一次。"];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:pass ? @"练习通过" : @"再接再厉"
                                                                    message:message

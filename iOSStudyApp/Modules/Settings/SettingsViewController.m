@@ -45,8 +45,8 @@
         ],
         @[
             @{@"key": @"stats", @"icon": @"chart.bar", @"title": @"学习统计",
-              @"detail": [NSString stringWithFormat:@"累计 %ld 分钟 · 完成 %ld 课",
-                          (long)store.totalStudyMinutes, (long)store.completedCount],
+              @"detail": [NSString stringWithFormat:@"今日 %@ · 累计 %@ · 完成 %ld 课",
+                          store.todayStudyDurationText, store.totalStudyDurationText, (long)store.completedCount],
               @"type": @"info"},
             @{@"key": @"goal", @"icon": @"target", @"title": @"每日目标",
               @"detail": [NSString stringWithFormat:@"%ld 分钟", (long)store.dailyGoalMinutes],
@@ -180,7 +180,20 @@
         [self confirmReset];
     } else if ([key isEqualToString:@"about"]) {
         [self showAbout];
-    } else if ([key isEqualToString:@"stats"] || [key isEqualToString:@"bookmarks"]) {
+    } else if ([key isEqualToString:@"stats"]) {
+        StudyDataStore *store = [StudyDataStore shared];
+        NSString *message = [NSString stringWithFormat:
+                             @"今日学习：%@\n累计学习：%@\n完成课程：%ld 课\n连续学习：%ld 天\n\n时长按阅读课文与练习的实际停留时间累计。",
+                             store.todayStudyDurationText,
+                             store.totalStudyDurationText,
+                             (long)store.completedCount,
+                             (long)store.streakDays];
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"学习统计"
+                                                                       message:message
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"好的" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
+    } else if ([key isEqualToString:@"bookmarks"]) {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:item[@"title"]
                                                                        message:item[@"detail"]
                                                                 preferredStyle:UIAlertControllerStyleAlert];

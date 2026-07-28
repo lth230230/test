@@ -18,6 +18,8 @@
 @property (nonatomic, strong) UIButton *practiceBtn;
 @property (nonatomic, strong) UIButton *completeBtn;
 @property (nonatomic, strong) UIBarButtonItem *bookmarkItem;
+@property (nonatomic, strong) NSDate *studyAnchor;
+@property (nonatomic, strong) NSTimer *studyTimer;
 @end
 
 @implementation LearnDetailViewController
@@ -36,10 +38,60 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(configureData)
                                                  name:StudyDataDidChangeNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appWillResignActive)
+                                                 name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(appDidBecomeActive)
+                                                 name:UIApplicationDidBecomeActiveNotification object:nil];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self beginStudyTracking];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self endStudyTracking];
 }
 
 - (void)dealloc {
+    [self.studyTimer invalidate];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)beginStudyTracking {
+    [self.studyTimer invalidate];
+    self.studyAnchor = [NSDate date];
+    __weak typeof(self) weakSelf = self;
+    self.studyTimer = [NSTimer scheduledTimerWithTimeInterval:15.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+        [weakSelf flushStudyDuration];
+    }];
+}
+
+- (void)endStudyTracking {
+    [self.studyTimer invalidate];
+    self.studyTimer = nil;
+    [self flushStudyDuration];
+    self.studyAnchor = nil;
+}
+
+- (void)flushStudyDuration {
+    if (!self.studyAnchor) return;
+    NSTimeInterval elapsed = [[NSDate date] timeIntervalSinceDate:self.studyAnchor];
+    self.studyAnchor = [NSDate date];
+    [[StudyDataStore shared] recordStudyDuration:elapsed forLessonId:self.data[@"id"]];
+}
+
+- (void)appWillResignActive {
+    if (self.view.window) {
+        [self endStudyTracking];
+    }
+}
+
+- (void)appDidBecomeActive {
+    if (self.view.window && !self.presentedViewController) {
+        [self beginStudyTracking];
+    }
 }
 
 - (void)setupNav {

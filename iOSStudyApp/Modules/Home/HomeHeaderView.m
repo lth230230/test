@@ -145,9 +145,9 @@
                                (long)done, (long)total, progress * 100];
     [self.progressBar setProgress:progress animated:YES];
     
-    NSInteger today = store.todayStudyMinutes;
     NSInteger goal = store.dailyGoalMinutes;
-    self.goalLabel.text = [NSString stringWithFormat:@"今日 %ld / %ld 分钟", (long)today, (long)goal];
+    self.goalLabel.text = [NSString stringWithFormat:@"今日已学 %@ · 目标 %ld 分钟",
+                           store.todayStudyDurationText, (long)goal];
     
     NSDictionary *next = [store nextLessonToContinue];
     NSString *title = next ? @"继续学习" : @"去看看";

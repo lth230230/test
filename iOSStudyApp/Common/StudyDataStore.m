@@ -10,19 +10,23 @@ NSNotificationName const StudyDataDidChangeNotification = @"StudyDataDidChangeNo
 static NSString * const kCompletedKey = @"my.completedLessons";
 static NSString * const kBookmarksKey = @"my.bookmarkedLessons";
 static NSString * const kLastLessonKey = @"my.lastLessonId";
-static NSString * const kTotalMinutesKey = @"my.totalStudyMinutes";
-static NSString * const kTodayMinutesKey = @"my.todayStudyMinutes";
+static NSString * const kTotalMinutesKey = @"my.totalStudyMinutes"; // legacy
+static NSString * const kTodayMinutesKey = @"my.todayStudyMinutes"; // legacy
+static NSString * const kTotalSecondsKey = @"my.totalStudySeconds";
+static NSString * const kTodaySecondsKey = @"my.todayStudySeconds";
 static NSString * const kTodayDateKey = @"my.todayDate";
 static NSString * const kStreakKey = @"my.streakDays";
 static NSString * const kLastStudyDateKey = @"my.lastStudyDate";
 static NSString * const kUserNameKey = @"my.userName";
 static NSString * const kDailyGoalKey = @"my.dailyGoalMinutes";
 static NSString * const kReminderKey = @"my.reminderEnabled";
+static NSString * const kMigratedSecondsKey = @"my.migratedStudySeconds";
 
 @interface StudyDataStore ()
 @property (nonatomic, strong) NSArray<NSDictionary *> *lessons;
 @property (nonatomic, strong) NSMutableSet<NSString *> *completedIds;
 @property (nonatomic, strong) NSMutableSet<NSString *> *bookmarkIds;
+@property (nonatomic, strong) NSDateFormatter *dayFormatter;
 @end
 
 @implementation StudyDataStore
@@ -39,8 +43,15 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 - (instancetype)init {
     self = [super init];
     if (self) {
+        _dayFormatter = [[NSDateFormatter alloc] init];
+        _dayFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+        _dayFormatter.timeZone = NSTimeZone.localTimeZone;
+        _dayFormatter.calendar = [NSCalendar calendarWithIdentifier:NSCalendarIdentifierGregorian];
+        _dayFormatter.dateFormat = @"yyyy-MM-dd";
+        
         [self buildCatalog];
         [self loadPersistedState];
+        [self migrateLegacyMinutesIfNeeded];
         [self refreshTodayIfNeeded];
     }
     return self;
@@ -257,9 +268,22 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 }
 
 - (NSString *)todayString {
-    NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
-    fmt.dateFormat = @"yyyy-MM-dd";
-    return [fmt stringFromDate:[NSDate date]];
+    return [self.dayFormatter stringFromDate:[NSDate date]];
+}
+
+- (void)migrateLegacyMinutesIfNeeded {
+    NSUserDefaults *ud = NSUserDefaults.standardUserDefaults;
+    if ([ud boolForKey:kMigratedSecondsKey]) return;
+    
+    NSInteger legacyTotal = [ud integerForKey:kTotalMinutesKey];
+    NSInteger legacyToday = [ud integerForKey:kTodayMinutesKey];
+    if (legacyTotal > 0 && [ud integerForKey:kTotalSecondsKey] == 0) {
+        [ud setInteger:legacyTotal * 60 forKey:kTotalSecondsKey];
+    }
+    if (legacyToday > 0 && [ud integerForKey:kTodaySecondsKey] == 0) {
+        [ud setInteger:legacyToday * 60 forKey:kTodaySecondsKey];
+    }
+    [ud setBool:YES forKey:kMigratedSecondsKey];
 }
 
 - (void)refreshTodayIfNeeded {
@@ -268,8 +292,22 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
     NSString *saved = [ud stringForKey:kTodayDateKey];
     if (![saved isEqualToString:today]) {
         [ud setObject:today forKey:kTodayDateKey];
+        [ud setInteger:0 forKey:kTodaySecondsKey];
         [ud setInteger:0 forKey:kTodayMinutesKey];
     }
+}
+
+- (NSString *)durationTextForSeconds:(NSInteger)seconds {
+    if (seconds <= 0) return @"0 分钟";
+    NSInteger minutes = seconds / 60;
+    NSInteger remain = seconds % 60;
+    if (minutes == 0) {
+        return [NSString stringWithFormat:@"%ld 秒", (long)remain];
+    }
+    if (remain == 0) {
+        return [NSString stringWithFormat:@"%ld 分钟", (long)minutes];
+    }
+    return [NSString stringWithFormat:@"%ld 分 %ld 秒", (long)minutes, (long)remain];
 }
 
 - (void)notifyChange {
@@ -284,16 +322,11 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 
 - (void)markLessonCompleted:(NSString *)lessonId {
     if (!lessonId.length) return;
-    BOOL added = ![self.completedIds containsObject:lessonId];
     [self.completedIds addObject:lessonId];
     [NSUserDefaults.standardUserDefaults setObject:lessonId forKey:kLastLessonKey];
-    NSDictionary *lesson = [self lessonWithId:lessonId];
-    if (added && lesson[@"minutes"]) {
-        [self addStudyMinutes:[lesson[@"minutes"] integerValue]];
-    } else {
-        [self persistSets];
-        [self notifyChange];
-    }
+    // Study duration is tracked from real page dwell time, not estimated lesson minutes.
+    [self persistSets];
+    [self notifyChange];
 }
 
 - (void)unmarkLessonCompleted:(NSString *)lessonId {
@@ -320,48 +353,82 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
     return MAX(1, [NSUserDefaults.standardUserDefaults integerForKey:kStreakKey]);
 }
 
+- (NSInteger)totalStudySeconds {
+    return [NSUserDefaults.standardUserDefaults integerForKey:kTotalSecondsKey];
+}
+
+- (NSInteger)todayStudySeconds {
+    [self refreshTodayIfNeeded];
+    return [NSUserDefaults.standardUserDefaults integerForKey:kTodaySecondsKey];
+}
+
 - (NSInteger)totalStudyMinutes {
-    return [NSUserDefaults.standardUserDefaults integerForKey:kTotalMinutesKey];
+    return self.totalStudySeconds / 60;
 }
 
 - (NSInteger)todayStudyMinutes {
+    return self.todayStudySeconds / 60;
+}
+
+- (NSString *)todayStudyDurationText {
+    return [self durationTextForSeconds:self.todayStudySeconds];
+}
+
+- (NSString *)totalStudyDurationText {
+    return [self durationTextForSeconds:self.totalStudySeconds];
+}
+
+- (void)recordStudyDuration:(NSTimeInterval)seconds forLessonId:(NSString *)lessonId {
+    // Ignore navigation noise; keep anything meaningfully spent on a page.
+    if (seconds < 2.0) return;
+    
+    NSInteger addSeconds = (NSInteger)llround(seconds);
+    if (addSeconds <= 0) return;
+    
     [self refreshTodayIfNeeded];
-    return [NSUserDefaults.standardUserDefaults integerForKey:kTodayMinutesKey];
+    NSUserDefaults *ud = NSUserDefaults.standardUserDefaults;
+    NSInteger total = [ud integerForKey:kTotalSecondsKey] + addSeconds;
+    NSInteger today = [ud integerForKey:kTodaySecondsKey] + addSeconds;
+    [ud setInteger:total forKey:kTotalSecondsKey];
+    [ud setInteger:today forKey:kTodaySecondsKey];
+    // Keep legacy minute keys roughly in sync for older builds.
+    [ud setInteger:total / 60 forKey:kTotalMinutesKey];
+    [ud setInteger:today / 60 forKey:kTodayMinutesKey];
+    
+    if (lessonId.length) {
+        [ud setObject:lessonId forKey:kLastLessonKey];
+    }
+    
+    NSString *day = [self todayString];
+    NSString *last = [ud stringForKey:kLastStudyDateKey];
+    if (![last isEqualToString:day]) {
+        if (last.length) {
+            NSDate *lastDate = [self.dayFormatter dateFromString:last];
+            NSDate *todayDate = [self.dayFormatter dateFromString:day];
+            if (lastDate && todayDate) {
+                NSInteger diff = (NSInteger)llround([todayDate timeIntervalSinceDate:lastDate] / 86400.0);
+                if (diff == 1) {
+                    [ud setInteger:[ud integerForKey:kStreakKey] + 1 forKey:kStreakKey];
+                } else if (diff > 1) {
+                    [ud setInteger:1 forKey:kStreakKey];
+                }
+            } else {
+                [ud setInteger:1 forKey:kStreakKey];
+            }
+        } else if ([ud integerForKey:kStreakKey] <= 0) {
+            [ud setInteger:1 forKey:kStreakKey];
+        }
+        [ud setObject:day forKey:kLastStudyDateKey];
+    }
+    
+    [ud synchronize];
+    [self persistSets];
+    [self notifyChange];
 }
 
 - (void)addStudyMinutes:(NSInteger)minutes {
-    if (minutes <= 0) {
-        [self persistSets];
-        [self notifyChange];
-        return;
-    }
-    [self refreshTodayIfNeeded];
-    NSUserDefaults *ud = NSUserDefaults.standardUserDefaults;
-    [ud setInteger:[ud integerForKey:kTotalMinutesKey] + minutes forKey:kTotalMinutesKey];
-    [ud setInteger:[ud integerForKey:kTodayMinutesKey] + minutes forKey:kTodayMinutesKey];
-    
-    NSString *today = [self todayString];
-    NSString *last = [ud stringForKey:kLastStudyDateKey];
-    if (![last isEqualToString:today]) {
-        if (last.length) {
-            NSDateFormatter *fmt = [[NSDateFormatter alloc] init];
-            fmt.dateFormat = @"yyyy-MM-dd";
-            NSDate *lastDate = [fmt dateFromString:last];
-            NSDate *todayDate = [fmt dateFromString:today];
-            NSInteger diff = (NSInteger)([todayDate timeIntervalSinceDate:lastDate] / 86400.0);
-            if (diff == 1) {
-                [ud setInteger:[ud integerForKey:kStreakKey] + 1 forKey:kStreakKey];
-            } else if (diff > 1) {
-                [ud setInteger:1 forKey:kStreakKey];
-            }
-        } else {
-            [ud setInteger:MAX(1, [ud integerForKey:kStreakKey]) forKey:kStreakKey];
-        }
-        [ud setObject:today forKey:kLastStudyDateKey];
-    }
-    
-    [self persistSets];
-    [self notifyChange];
+    if (minutes <= 0) return;
+    [self recordStudyDuration:minutes * 60.0 forLessonId:nil];
 }
 
 - (NSString *)lastLessonId {
@@ -370,6 +437,8 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
 
 - (void)setLastLessonId:(NSString *)lessonId {
     if (!lessonId.length) return;
+    NSString *current = [NSUserDefaults.standardUserDefaults stringForKey:kLastLessonKey];
+    if ([current isEqualToString:lessonId]) return;
     [NSUserDefaults.standardUserDefaults setObject:lessonId forKey:kLastLessonKey];
     [self persistSets];
     [self notifyChange];
@@ -450,6 +519,8 @@ static NSString * const kReminderKey = @"my.reminderEnabled";
     [ud removeObjectForKey:kLastLessonKey];
     [ud setInteger:0 forKey:kTotalMinutesKey];
     [ud setInteger:0 forKey:kTodayMinutesKey];
+    [ud setInteger:0 forKey:kTotalSecondsKey];
+    [ud setInteger:0 forKey:kTodaySecondsKey];
     [ud setInteger:1 forKey:kStreakKey];
     [ud removeObjectForKey:kLastStudyDateKey];
     [self persistSets];

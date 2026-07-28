@@ -31,9 +31,15 @@ FOUNDATION_EXPORT NSNotificationName const StudyDataDidChangeNotification;
 - (NSInteger)totalLessonCount;
 - (float)overallProgress;
 - (NSInteger)streakDays;
+- (NSInteger)totalStudySeconds;
+- (NSInteger)todayStudySeconds;
 - (NSInteger)totalStudyMinutes;
 - (NSInteger)todayStudyMinutes;
+/// Record real elapsed study time (reading / practice). Ignores tiny noise under 2s.
+- (void)recordStudyDuration:(NSTimeInterval)seconds forLessonId:(nullable NSString *)lessonId;
 - (void)addStudyMinutes:(NSInteger)minutes;
+- (NSString *)todayStudyDurationText;
+- (NSString *)totalStudyDurationText;
 - (nullable NSString *)lastLessonId;
 - (void)setLastLessonId:(NSString *)lessonId;
 - (nullable NSDictionary *)nextLessonToContinue;
