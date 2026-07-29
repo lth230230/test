@@ -1,0 +1,27 @@
+{
+  "schema_version": "asd.plan-gate.v1",
+  "created_at": "2026-07-29T02:38:33.879Z",
+  "work_item_id": "friend-list",
+  "spec_id": "friend-list",
+  "plan_file": "asd/plans/friend-list.md",
+  "route": "external-plan-artifact",
+  "artifact": {
+    "type": "plan",
+    "path": "asd/plans/friend-list.md",
+    "hash": "sha256:9f876459d804a486c5b32c2310b106175ccd44faab2681f5011b23fcf69138de",
+    "revision": 1,
+    "revision_path": "asd/state/artifact-revisions/plan-friend-list.json"
+  },
+  "gate": {
+    "status": "complete",
+    "user_reviewed": true,
+    "summary": "User approved lite plan: local mock friends tab, add by search, detail with study minutes and records.",
+    "approved_by": "user",
+    "approval_source": "agent-window",
+    "decision_summary": "方案 A 本地模拟；新增好友 Tab；UserDefaults 持久化；无后端。"
+  },
+  "source": {
+    "skill_path": "",
+    "conversation_ref": ""
+  }
+}

@@ -27,6 +27,10 @@
 		B10019 /* CourseListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20035; };
 		B10020 /* ResourceDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20037; };
 		B10021 /* lessons.json in Resources */ = {isa = PBXBuildFile; fileRef = B20039; };
+		B10022 /* FriendStore.m in Sources */ = {isa = PBXBuildFile; fileRef = B20040; };
+		B10023 /* FriendsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20042; };
+		B10024 /* FriendsAddViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20044; };
+		B10025 /* FriendDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B20046; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +73,14 @@
 		B20037 /* ResourceDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ResourceDetailViewController.m; sourceTree = "<group>"; };
 		B20038 /* ResourceDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ResourceDetailViewController.h; sourceTree = "<group>"; };
 		B20039 /* lessons.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = lessons.json; sourceTree = "<group>"; };
+		B20040 /* FriendStore.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FriendStore.m; sourceTree = "<group>"; };
+		B20041 /* FriendStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FriendStore.h; sourceTree = "<group>"; };
+		B20042 /* FriendsViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FriendsViewController.m; sourceTree = "<group>"; };
+		B20043 /* FriendsViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FriendsViewController.h; sourceTree = "<group>"; };
+		B20044 /* FriendsAddViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FriendsAddViewController.m; sourceTree = "<group>"; };
+		B20045 /* FriendsAddViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FriendsAddViewController.h; sourceTree = "<group>"; };
+		B20046 /* FriendDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FriendDetailViewController.m; sourceTree = "<group>"; };
+		B20047 /* FriendDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FriendDetailViewController.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,15 +97,16 @@
 		};
 		B40003 /* Products */ = {isa = PBXGroup; children = (B20028); name = Products; sourceTree = "<group>"; };
 		B40004 /* Base */ = {isa = PBXGroup; children = (B20015, B20004, B20016, B20005); path = Base; sourceTree = "<group>"; };
-		B40005 /* Modules */ = {isa = PBXGroup; children = (B40007 /* Home */, B40008 /* Learn */, B40013 /* Practice */, B40009 /* Resources */, B40011 /* Settings */); path = Modules; sourceTree = "<group>"; };
+		B40005 /* Modules */ = {isa = PBXGroup; children = (B40007 /* Home */, B40008 /* Learn */, B40013 /* Practice */, B40009 /* Resources */, B40014 /* Friends */, B40011 /* Settings */); path = Modules; sourceTree = "<group>"; };
 		B40006 /* Resources */ = {isa = PBXGroup; children = (B20039); path = Resources; sourceTree = "<group>"; };
 		B40007 /* Home */ = {isa = PBXGroup; children = (B20017, B20006, B20018, B20007, B20019, B20008, B20020, B20009); path = Home; sourceTree = "<group>"; };
 		B40008 /* Learn */ = {isa = PBXGroup; children = (B20021, B20010, B20036, B20035); path = Learn; sourceTree = "<group>"; };
 		B40009 /* Resources */ = {isa = PBXGroup; children = (B20025, B20011, B20038, B20037); path = Resources; sourceTree = "<group>"; };
 		B40010 /* Frameworks */ = {isa = PBXGroup; children = (B20022, B20023, B20024); name = Frameworks; sourceTree = "<group>"; };
 		B40011 /* Settings */ = {isa = PBXGroup; children = (B20026, B20012); path = Settings; sourceTree = "<group>"; };
-		B40012 /* Common */ = {isa = PBXGroup; children = (B20030, B20029, B20032, B20031); path = Common; sourceTree = "<group>"; };
+		B40012 /* Common */ = {isa = PBXGroup; children = (B20030, B20029, B20032, B20031, B20041, B20040); path = Common; sourceTree = "<group>"; };
 		B40013 /* Practice */ = {isa = PBXGroup; children = (B20034, B20033); path = Practice; sourceTree = "<group>"; };
+		B40014 /* Friends */ = {isa = PBXGroup; children = (B20043, B20042, B20045, B20044, B20047, B20046); path = Friends; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -132,7 +145,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		B60001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B10001, B10002, B10003, B10004, B10005, B10006, B10007, B10008, B10009, B10010, B10011, B10012, B10016, B10017, B10018, B10019, B10020); runOnlyForDeploymentPostprocessing = 0; };
+		B60001 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B10001, B10002, B10003, B10004, B10005, B10006, B10007, B10008, B10009, B10010, B10011, B10012, B10016, B10017, B10018, B10019, B10020, B10022, B10023, B10024, B10025); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
@@ -148,7 +161,7 @@
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
 				CLANG_ENABLE_MODULES = YES;
 				GCC_PREFIX_HEADER = "";
-				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/iOSStudyApp/Common", "$(SRCROOT)/iOSStudyApp/Base", "$(SRCROOT)/iOSStudyApp/Modules/Home", "$(SRCROOT)/iOSStudyApp/Modules/Learn", "$(SRCROOT)/iOSStudyApp/Modules/Practice", "$(SRCROOT)/iOSStudyApp/Modules/Resources", "$(SRCROOT)/iOSStudyApp/Modules/Settings");
+				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/iOSStudyApp/Common", "$(SRCROOT)/iOSStudyApp/Base", "$(SRCROOT)/iOSStudyApp/Modules/Home", "$(SRCROOT)/iOSStudyApp/Modules/Learn", "$(SRCROOT)/iOSStudyApp/Modules/Practice", "$(SRCROOT)/iOSStudyApp/Modules/Resources", "$(SRCROOT)/iOSStudyApp/Modules/Friends", "$(SRCROOT)/iOSStudyApp/Modules/Settings");
 			};
 			name = Debug;
 		};
@@ -163,7 +176,7 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
 				CLANG_ENABLE_MODULES = YES;
-				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/iOSStudyApp/Common", "$(SRCROOT)/iOSStudyApp/Base", "$(SRCROOT)/iOSStudyApp/Modules/Home", "$(SRCROOT)/iOSStudyApp/Modules/Learn", "$(SRCROOT)/iOSStudyApp/Modules/Practice", "$(SRCROOT)/iOSStudyApp/Modules/Resources", "$(SRCROOT)/iOSStudyApp/Modules/Settings");
+				HEADER_SEARCH_PATHS = ("$(inherited)", "$(SRCROOT)/iOSStudyApp/Common", "$(SRCROOT)/iOSStudyApp/Base", "$(SRCROOT)/iOSStudyApp/Modules/Home", "$(SRCROOT)/iOSStudyApp/Modules/Learn", "$(SRCROOT)/iOSStudyApp/Modules/Practice", "$(SRCROOT)/iOSStudyApp/Modules/Resources", "$(SRCROOT)/iOSStudyApp/Modules/Friends", "$(SRCROOT)/iOSStudyApp/Modules/Settings");
 			};
 			name = Release;
 		};

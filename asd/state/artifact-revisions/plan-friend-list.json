@@ -1,0 +1,12 @@
+{
+  "schema_version": "asd.artifact-revision.v1",
+  "artifact_type": "plan",
+  "file": "asd/plans/friend-list.md",
+  "spec_id": "friend-list",
+  "work_item_id": "friend-list",
+  "revision": 1,
+  "content_hash": "sha256:9f876459d804a486c5b32c2310b106175ccd44faab2681f5011b23fcf69138de",
+  "previous_hash": "sha256:9f876459d804a486c5b32c2310b106175ccd44faab2681f5011b23fcf69138de",
+  "changed_at": "2026-07-29T02:38:33.879Z",
+  "source": "plan-gate"
+}

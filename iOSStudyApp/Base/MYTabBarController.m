@@ -7,6 +7,7 @@
 #import "HomeViewController.h"
 #import "LearnViewController.h"
 #import "ResourcesViewController.h"
+#import "FriendsViewController.h"
 #import "SettingsViewController.h"
 #import "MYNavigationController.h"
 #import "MYTheme.h"
@@ -38,9 +39,12 @@
     
     ResourcesViewController *resourcesVC = [[ResourcesViewController alloc] init];
     [self addChildVC:resourcesVC title:@"资源" image:@"tray.full" tag:2];
+
+    FriendsViewController *friendsVC = [[FriendsViewController alloc] init];
+    [self addChildVC:friendsVC title:@"好友" image:@"person.2" tag:3];
     
     SettingsViewController *settingsVC = [[SettingsViewController alloc] init];
-    [self addChildVC:settingsVC title:@"设置" image:@"gearshape" tag:3];
+    [self addChildVC:settingsVC title:@"设置" image:@"gearshape" tag:4];
 }
 
 - (void)addChildVC:(UIViewController *)vc title:(NSString *)title image:(NSString *)imageName tag:(NSInteger)tag {

@@ -1,0 +1,36 @@
+{
+  "schema_version": "asd.stage-timing.v1",
+  "work_item_id": "friend-list",
+  "spec_id": "friend-list",
+  "stages": {
+    "intake": {
+      "route": "lite_sdd",
+      "started_at": "",
+      "completed_at": "",
+      "duration_ms": 0,
+      "entered_count": 0,
+      "reopened_count": 0,
+      "blocked_duration_ms": 0
+    },
+    "plan": {
+      "route": "external-plan-artifact",
+      "started_at": "",
+      "completed_at": "2026-07-29T02:38:34.208Z",
+      "duration_ms": 0,
+      "entered_count": 0,
+      "reopened_count": 0,
+      "blocked_duration_ms": 0
+    },
+    "implementation": {
+      "route": "implementation",
+      "started_at": "",
+      "completed_at": "2026-07-29T02:41:51.384Z",
+      "duration_ms": 0,
+      "entered_count": 0,
+      "reopened_count": 0,
+      "blocked_duration_ms": 0
+    }
+  },
+  "created_at": "2026-07-29T02:28:32.852Z",
+  "updated_at": "2026-07-29T02:41:51.384Z"
+}

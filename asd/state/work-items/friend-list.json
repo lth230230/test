@@ -1,0 +1,22 @@
+{
+  "schema_version": "asd.work-item.v1",
+  "work_item_id": "friend-list",
+  "title": "好友列表与学习动态",
+  "repo": "iOSStudyApp",
+  "branch": "cursor/lessons-json-deep-content",
+  "git_sha": "dfa2c0b",
+  "spec_id": "friend-list",
+  "pms_id": "",
+  "change_type": "feature",
+  "slug": "friend-list",
+  "external_refs": {},
+  "agent_session_id": "",
+  "author": "",
+  "policy_mode": "advisory",
+  "status": "active",
+  "started_at": "2026-07-29T02:28:32.507Z",
+  "completed_at": "",
+  "links": {},
+  "created_at": "2026-07-29T02:28:32.507Z",
+  "updated_at": "2026-07-29T02:30:39.435Z"
+}
